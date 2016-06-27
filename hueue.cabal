@@ -18,10 +18,12 @@ library
   exposed-modules:     Lib
   build-depends:       base >= 4.7 && < 5
                      , github
-                     , network
-                     , bytestring
                      , scotty
                      , transformers
+                     , aeson
+                     , text
+                     , bytestring
+                     , wai
   default-language:    Haskell2010
 
 executable hueue-exe
@@ -30,10 +32,12 @@ executable hueue-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , hueue
-                     , network
-                     , bytestring
                      , scotty
                      , transformers
+                     , aeson
+                     , text
+                     , bytestring
+                     , wai
   default-language:    Haskell2010
 
 test-suite hueue-test
