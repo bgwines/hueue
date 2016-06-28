@@ -1,0 +1,9 @@
+4 abstractions
+    webhook (producer)
+        async receives webrequests from Github; forks processing of them
+
+    ui
+        serves webrequests
+        queries db
+
+    db

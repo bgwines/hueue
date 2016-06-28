@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module GithubWebhook (main) where
 
 import qualified Web.Scotty as Scotty
 import qualified Network.Wai as Wai
@@ -20,25 +20,18 @@ import Control.Monad.IO.Class
 import qualified Data.Aeson as A
 
 import qualified Events
+import qualified Utils as U
 
 main :: IO ()
-main = Scotty.scotty 4567 $ do
+main = serve 4567
+
+serve :: Int -> IO ()
+serve port = Scotty.scotty port $ do
     Scotty.post "/payload" $ do
         request <- Scotty.request
         headers <- Scotty.headers
         body <- Scotty.body
-        liftIO . putStrLn $ "--------------------------"
-        liftIO . print    $ request
-        liftIO . putStrLn $ "--------------------------"
-        liftIO . print    $ headers
-        liftIO . putStrLn $ "--------------------------"
-        liftIO . print    $ body
         handleGithubWebrequest request headers body
-
-    Scotty.post "/:word" $ do
-        beam <- Scotty.param "word"
-        liftIO $ print $ mconcat ["get; word = ", beam]
-        Scotty.html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
 
     Scotty.notFound $ do
         Scotty.text "there is no such route."
@@ -48,7 +41,7 @@ handleGithubWebrequest request headers body = do
     let maybeEvent = fmap snd . L.find ((==) "X-GitHub-Event" . fst) $ headers
     case maybeEvent of
         Just "push" -> handlePush request headers body
-        _ -> liftIO . print $ "Cannot handle Github event: " ++ (show maybeEvent)
+        _ -> liftIO . putStrLn $ "Cannot handle Github event: " ++ (show maybeEvent)
 
 handlePush request headers body = do
     liftIO . putStrLn $ "Handling a push!"
