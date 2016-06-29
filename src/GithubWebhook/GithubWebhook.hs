@@ -19,8 +19,8 @@ import Control.Monad.IO.Class
 
 import qualified Data.Aeson as A
 
-import qualified Events
-import qualified Utils as U
+import qualified GithubWebhook.Types.Events as Events
+import qualified GithubWebhook.Utils as U
 
 main :: IO ()
 main = serve 4567
@@ -31,6 +31,9 @@ serve port = Scotty.scotty port $ do
         request <- Scotty.request
         headers <- Scotty.headers
         body <- Scotty.body
+        U.printIO request
+        U.printIO headers
+        U.printIO body
         handleGithubWebrequest request headers body
 
     Scotty.notFound $ do
@@ -41,8 +44,13 @@ handleGithubWebrequest request headers body = do
     let maybeEvent = fmap snd . L.find ((==) "X-GitHub-Event" . fst) $ headers
     case maybeEvent of
         Just "push" -> handlePush request headers body
-        _ -> liftIO . putStrLn $ "Cannot handle Github event: " ++ (show maybeEvent)
+        Just "issue_comment" -> handleIssueComment request headers body
+        _ -> U.putStrLnIO $ "Cannot handle Github event: " ++ (show maybeEvent)
 
 handlePush request headers body = do
-    liftIO . putStrLn $ "Handling a push!"
-    liftIO . print $ (A.eitherDecode body :: Either String Events.PushEvent)
+    U.putStrLnIO $ "Handling an issue comment!"
+    --printIO $ (A.eitherDecode body :: Either String Events.IssueCommentEvent)
+
+handlePush request headers body = do
+    U.putStrLnIO $ "Handling a push!"
+    printIO $ (A.eitherDecode body :: Either String Events.PushEvent)

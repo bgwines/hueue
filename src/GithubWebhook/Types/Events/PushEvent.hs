@@ -1,16 +1,16 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Events
-( PushEvent
+module GithubWebhook.Types.Events.PushEvent
+( PushEvent(..)
 ) where
 
 import qualified Data.Text as T
 import qualified Data.Aeson as A
 
-import qualified User as U
-import qualified Repo as R
-import qualified Commit as C
-import qualified Sender as S
+import qualified GithubWebhook.Types.User as U
+import qualified GithubWebhook.Types.Repo as R
+import qualified GithubWebhook.Types.Commit as C
+import qualified GithubWebhook.Types.Sender as S
 
 import GHC.Generics
 

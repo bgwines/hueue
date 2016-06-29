@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Commit
-( Commit
+module GithubWebhook.Types.Commit
+( Commit(..)
 ) where
 
 import qualified Data.Text as T
@@ -9,7 +9,7 @@ import qualified Data.Aeson as A
 
 import GHC.Generics
 
-import qualified User as U
+import qualified GithubWebhook.Types.User as U
 
 data Commit = Commit
     { id :: T.Text

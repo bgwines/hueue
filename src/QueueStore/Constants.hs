@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module QueueStoreConstants
+module QueueStore.Constants
 ( queueStoreDBPath
 ) where
 

@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Repo
-( Repo
+module GithubWebhook.Types.Repo
+( Repo(..)
 ) where
 
 import qualified Data.Text as T
 import qualified Data.Aeson as A
 
-import qualified User as U
+import qualified GithubWebhook.Types.User as U
 
 import GHC.Generics
 

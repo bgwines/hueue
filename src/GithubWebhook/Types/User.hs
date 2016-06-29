@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module User
-( User
+module GithubWebhook.Types.User
+( User(..)
 ) where
 
 import qualified Data.Text as T

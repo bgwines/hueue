@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Sender
-( Sender
+module GithubWebhook.Types.Sender
+( Sender(..)
 ) where
 
 import qualified Data.Char as Ch
@@ -12,7 +12,6 @@ import qualified Data.Aeson.TH as A
 
 import GHC.Generics
 
-import qualified User as U
 import qualified Utils
 
 data Sender = Sender
