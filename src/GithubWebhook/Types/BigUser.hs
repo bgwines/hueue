@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module GithubWebhook.Types.Sender
-( Sender(..)
+module GithubWebhook.Types.BigUser
+( BigUser(..)
 ) where
 
 import qualified Data.Char as Ch
@@ -14,7 +14,7 @@ import GHC.Generics
 
 import qualified Utils
 
-data Sender = Sender
+data BigUser = BigUser
     { login :: T.Text
     , id :: Integer
     , avatarUrl :: T.Text
@@ -30,10 +30,10 @@ data Sender = Sender
     , reposUrl :: T.Text
     , eventsUrl :: T.Text
     , receivedEventsUrl :: T.Text
-    , senderType :: T.Text
+    , BigUserType :: T.Text
     , siteAdmin :: Bool } deriving (Eq, Generic, Show)
 
 $(A.deriveJSON
     A.defaultOptions
-    {A.fieldLabelModifier = Utils.senderJSONFieldModifier}
-    ''Sender)
+    {A.fieldLabelModifier = Utils.BigUserJSONFieldModifier}
+    ''BigUser)

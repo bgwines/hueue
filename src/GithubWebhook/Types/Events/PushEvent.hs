@@ -10,7 +10,7 @@ import qualified Data.Aeson as A
 import qualified GithubWebhook.Types.User as U
 import qualified GithubWebhook.Types.Repo as R
 import qualified GithubWebhook.Types.Commit as C
-import qualified GithubWebhook.Types.Sender as S
+import qualified GithubWebhook.Types.BigUser as S
 
 import GHC.Generics
 
@@ -27,7 +27,7 @@ data PushEvent = PushEvent
     , head_commit :: C.Commit
     , repository :: R.Repo
     , pusher :: U.User
-    , sender :: S.Sender } deriving (Eq, Generic, Show)
+    , BigUser :: S.BigUser } deriving (Eq, Generic, Show)
 
 instance A.ToJSON PushEvent
 instance A.FromJSON PushEvent

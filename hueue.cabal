@@ -18,8 +18,11 @@ library
   exposed-modules:     Utils
                      , GithubWebhook.Types.User
                      , GithubWebhook.Types.Repo
+                     , GithubWebhook.Types.Issue
                      , GithubWebhook.Types.Sender
                      , GithubWebhook.Types.Commit
+                     , GithubWebhook.Types.Comment
+                     , GithubWebhook.Types.PullRequest
                      , GithubWebhook.Types.Events.PushEvent
                      , GithubWebhook.Types.Events.IssueCommentEvent
                      , QueueStore.Types

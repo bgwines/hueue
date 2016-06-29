@@ -1,5 +1,5 @@
 module Utils
-( senderJSONFieldModifier
+( BigUserJSONFieldModifier
 , printIO
 , putStrLnIO
 , hushT
@@ -22,10 +22,10 @@ camelCaseToSnakeCase (ch:s)
     | Ch.isUpper ch = '_' : Ch.toLower ch : camelCaseToSnakeCase s
     | otherwise = ch : camelCaseToSnakeCase s
 
-senderJSONFieldModifier :: String -> String
-senderJSONFieldModifier fieldName =
+BigUserJSONFieldModifier :: String -> String
+BigUserJSONFieldModifier fieldName =
     case fieldName of
-        "senderType" -> "type"
+        "BigUserType" -> "type"
         _ -> camelCaseToSnakeCase fieldName
 
 printIO :: (MonadIO m, Show a) => a -> m ()
