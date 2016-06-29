@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module GithubWebhook.Types.Commit
 ( Commit(..)
@@ -6,23 +7,28 @@ module GithubWebhook.Types.Commit
 
 import qualified Data.Text as T
 import qualified Data.Aeson as A
+import qualified Data.Aeson.TH as A
 
 import GHC.Generics
 
-import qualified GithubWebhook.Types.User as U
+import qualified GithubWebhook.Types.SmallUser as SmallUser
+
+import qualified Utils
 
 data Commit = Commit
     { id :: T.Text
-    , tree_id :: T.Text
+    , treeId :: T.Text
     , distinct :: Bool
     , message :: T.Text
     , timestamp :: T.Text
     , url :: T.Text
-    , author :: U.User
-    , committer :: U.User
+    , author :: SmallUser.SmallUser
+    , committer :: SmallUser.SmallUser
     , added :: [T.Text]
     , removed :: [T.Text]
     , modified :: [T.Text] } deriving (Eq, Generic, Show)
 
-instance A.ToJSON Commit
-instance A.FromJSON Commit
+$(A.deriveJSON
+    A.defaultOptions
+    {A.fieldLabelModifier = Utils.camelCaseToSnakeCase}
+    ''Commit)

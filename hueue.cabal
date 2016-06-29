@@ -16,12 +16,12 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src, lib
   exposed-modules:     Utils
-                     , GithubWebhook.Types.User
                      , GithubWebhook.Types.Repo
                      , GithubWebhook.Types.Issue
-                     , GithubWebhook.Types.Sender
                      , GithubWebhook.Types.Commit
                      , GithubWebhook.Types.Comment
+                     , GithubWebhook.Types.BigUser
+                     , GithubWebhook.Types.SmallUser
                      , GithubWebhook.Types.PullRequest
                      , GithubWebhook.Types.Events.PushEvent
                      , GithubWebhook.Types.Events.IssueCommentEvent

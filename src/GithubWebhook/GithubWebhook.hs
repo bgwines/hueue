@@ -19,8 +19,9 @@ import Control.Monad.IO.Class
 
 import qualified Data.Aeson as A
 
-import qualified GithubWebhook.Types.Events as Events
-import qualified GithubWebhook.Utils as U
+import GithubWebhook.Types.Events.PushEvent
+import GithubWebhook.Types.Events.IssueCommentEvent
+import qualified Utils as U
 
 main :: IO ()
 main = serve 4567
@@ -47,10 +48,10 @@ handleGithubWebrequest request headers body = do
         Just "issue_comment" -> handleIssueComment request headers body
         _ -> U.putStrLnIO $ "Cannot handle Github event: " ++ (show maybeEvent)
 
-handlePush request headers body = do
+handleIssueComment request headers body = do
     U.putStrLnIO $ "Handling an issue comment!"
-    --printIO $ (A.eitherDecode body :: Either String Events.IssueCommentEvent)
+    U.printIO $ (A.eitherDecode body :: Either String IssueCommentEvent)
 
 handlePush request headers body = do
     U.putStrLnIO $ "Handling a push!"
-    printIO $ (A.eitherDecode body :: Either String Events.PushEvent)
+    U.printIO $ (A.eitherDecode body :: Either String PushEvent)

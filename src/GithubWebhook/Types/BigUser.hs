@@ -30,10 +30,10 @@ data BigUser = BigUser
     , reposUrl :: T.Text
     , eventsUrl :: T.Text
     , receivedEventsUrl :: T.Text
-    , BigUserType :: T.Text
+    , userType :: T.Text
     , siteAdmin :: Bool } deriving (Eq, Generic, Show)
 
 $(A.deriveJSON
     A.defaultOptions
-    {A.fieldLabelModifier = Utils.BigUserJSONFieldModifier}
+    {A.fieldLabelModifier = Utils.bigUserJSONFieldModifier}
     ''BigUser)

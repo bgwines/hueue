@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module GithubWebhook.Types.Repo
 ( Repo(..)
@@ -6,82 +7,87 @@ module GithubWebhook.Types.Repo
 
 import qualified Data.Text as T
 import qualified Data.Aeson as A
+import qualified Data.Aeson.TH as A
 
-import qualified GithubWebhook.Types.User as U
+import qualified GithubWebhook.Types.SmallUser as SmallUser
+
+import qualified Utils
 
 import GHC.Generics
 
 data Repo = Repo
     { id :: Integer
     , name :: T.Text
-    , full_name :: T.Text
-    , owner :: U.User
+    , fullName :: T.Text
+    , owner :: SmallUser.SmallUser
     , private :: Bool
-    , html_url :: T.Text
+    , htmlUrl :: T.Text
     , description :: T.Text
     , fork :: Bool
     , url :: T.Text
-    , forks_url :: T.Text
-    , keys_url :: T.Text
-    , collaborators_url :: T.Text
-    , teams_url :: T.Text
-    , hooks_url :: T.Text
-    , issue_events_url :: T.Text
-    , events_url :: T.Text
-    , assignees_url :: T.Text
-    , branches_url :: T.Text
-    , tags_url :: T.Text
-    , blobs_url :: T.Text
-    , git_tags_url :: T.Text
-    , git_refs_url :: T.Text
-    , trees_url :: T.Text
-    , statuses_url :: T.Text
-    , languages_url :: T.Text
-    , stargazers_url :: T.Text
-    , contributors_url :: T.Text
-    , subscribers_url :: T.Text
-    , subscription_url :: T.Text
-    , commits_url :: T.Text
-    , git_commits_url :: T.Text
-    , comments_url :: T.Text
-    , issue_comment_url :: T.Text
-    , contents_url :: T.Text
-    , compare_url :: T.Text
-    , merges_url :: T.Text
-    , archive_url :: T.Text
-    , downloads_url :: T.Text
-    , issues_url :: T.Text
-    , pulls_url :: T.Text
-    , milestones_url :: T.Text
-    , notifications_url :: T.Text
-    , labels_url :: T.Text
-    , releases_url :: T.Text
-    , deployments_url :: T.Text
-    , created_at :: Integer
-    , updated_at :: T.Text
-    , pushed_at :: Integer
-    , git_url :: T.Text
-    , ssh_url :: T.Text
-    , clone_url :: T.Text
-    , svn_url :: T.Text
+    , forksUrl :: T.Text
+    , keysUrl :: T.Text
+    , collaboratorsUrl :: T.Text
+    , teamsUrl :: T.Text
+    , hooksUrl :: T.Text
+    , issueEventsUrl :: T.Text
+    , eventsUrl :: T.Text
+    , assigneesUrl :: T.Text
+    , branchesUrl :: T.Text
+    , tagsUrl :: T.Text
+    , blobsUrl :: T.Text
+    , gitTagsUrl :: T.Text
+    , gitRefsUrl :: T.Text
+    , treesUrl :: T.Text
+    , statusesUrl :: T.Text
+    , languagesUrl :: T.Text
+    , stargazersUrl :: T.Text
+    , contributorsUrl :: T.Text
+    , subscribersUrl :: T.Text
+    , subscriptionUrl :: T.Text
+    , commitsUrl :: T.Text
+    , gitCommitsUrl :: T.Text
+    , commentsUrl :: T.Text
+    , issueCommentUrl :: T.Text
+    , contentsUrl :: T.Text
+    , compareUrl :: T.Text
+    , mergesUrl :: T.Text
+    , archiveUrl :: T.Text
+    , downloadsUrl :: T.Text
+    , issuesUrl :: T.Text
+    , pullsUrl :: T.Text
+    , milestonesUrl :: T.Text
+    , notificationsUrl :: T.Text
+    , labelsUrl :: T.Text
+    , releasesUrl :: T.Text
+    , deploymentsUrl :: T.Text
+    , createdAt :: Integer
+    , updatedAt :: T.Text
+    , pushedAt :: Integer
+    , gitUrl :: T.Text
+    , sshUrl :: T.Text
+    , cloneUrl :: T.Text
+    , svnUrl :: T.Text
     , homepage :: Maybe T.Text
     , size :: Integer
-    , stargazers_count :: Integer
-    , watchers_count :: Integer
+    , stargazersCount :: Integer
+    , watchersCount :: Integer
     , language :: Maybe T.Text
-    , has_issues :: Bool
-    , has_downloads :: Bool
-    , has_wiki :: Bool
-    , has_pages :: Bool
-    , forks_count :: Integer
-    , mirror_url :: Maybe T.Text
-    , open_issues_count :: Integer
+    , hasIssues :: Bool
+    , hasDownloads :: Bool
+    , hasWiki :: Bool
+    , hasPages :: Bool
+    , forksCount :: Integer
+    , mirrorUrl :: Maybe T.Text
+    , openIssuesCount :: Integer
     , forks :: Integer
-    , open_issues :: Integer
+    , openIssues :: Integer
     , watchers :: Integer
-    , default_branch :: T.Text
+    , defaultBranch :: T.Text
     , stargazers :: Integer
-    , master_branch :: T.Text } deriving (Eq, Generic, Show)
+    , masterBranch :: T.Text } deriving (Eq, Generic, Show)
 
-instance A.ToJSON Repo
-instance A.FromJSON Repo
+$(A.deriveJSON
+    A.defaultOptions
+    {A.fieldLabelModifier = Utils.camelCaseToSnakeCase}
+    ''Repo)
