@@ -1,9 +1,25 @@
 4 abstractions
     webhook (producer)
-        async receives webrequests from Github; forks processing of them
+        receives webrequests from Github; forks handling of them
+        writes to db
+
+        abstract into Hackage library eventually
 
     ui
         serves webrequests
         queries db
 
     db
+        stores a map: repo -> job queue
+
+    consumer
+        regularly polls db
+        forks new jobs; executes them
+        updates db when task is consumed
+        talks to Travis
+
+each of the 4 only interact with db; not each other
+
+TODO:
+    testing
+    docs
