@@ -15,7 +15,7 @@ import GHC.Generics
 import qualified Utils
 
 data BigUser = BigUser
-    { login :: T.Text
+    { login :: Maybe T.Text
     , id :: Integer
     , avatarUrl :: T.Text
     , gravatarId :: T.Text

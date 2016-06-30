@@ -24,4 +24,7 @@ TODO:
     testing
     docs
     mock DB / network for testing?
-    rename Sender
+    handleGithubWebrequest types could be better?
+
+    liftMonadTrans :: (MonadTrans t, Monad m, Monad m1) => (m a -> m1 a) -> t m a -> t m1 a
+    liftMonadTrans liftMonad = lift . liftMonad . run
