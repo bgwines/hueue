@@ -14,6 +14,7 @@ import GHC.Generics
 
 import qualified Utils
 
+import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.SmallUser as SmallUser
 import qualified GithubWebhook.Types.PullRequest as PullRequest
 
@@ -27,7 +28,7 @@ data Issue = Issue
     , id :: Integer
     , number :: Integer
     , title :: T.Text
-    , user :: SmallUser.SmallUser
+    , user :: BigUser.BigUser
     , labels :: [T.Text] -- [???]
     , state :: T.Text
     , locked :: Bool

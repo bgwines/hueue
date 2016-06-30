@@ -9,6 +9,7 @@ import qualified Data.Text as T
 import qualified Data.Aeson as A
 import qualified Data.Aeson.TH as A
 
+import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.SmallUser as SmallUser
 
 import qualified Utils
@@ -19,7 +20,7 @@ data Repo = Repo
     { id :: Integer
     , name :: T.Text
     , fullName :: T.Text
-    , owner :: SmallUser.SmallUser
+    , owner :: BigUser.BigUser
     , private :: Bool
     , htmlUrl :: T.Text
     , description :: T.Text
@@ -61,9 +62,9 @@ data Repo = Repo
     , labelsUrl :: T.Text
     , releasesUrl :: T.Text
     , deploymentsUrl :: T.Text
-    , createdAt :: Integer
+    , createdAt :: T.Text
     , updatedAt :: T.Text
-    , pushedAt :: Integer
+    , pushedAt :: T.Text
     , gitUrl :: T.Text
     , sshUrl :: T.Text
     , cloneUrl :: T.Text
@@ -84,8 +85,8 @@ data Repo = Repo
     , openIssues :: Integer
     , watchers :: Integer
     , defaultBranch :: T.Text
-    , stargazers :: Integer
-    , masterBranch :: T.Text } deriving (Eq, Generic, Show)
+    , stargazers :: Maybe Integer
+    , masterBranch :: Maybe T.Text } deriving (Eq, Generic, Show)
 
 $(A.deriveJSON
     A.defaultOptions

@@ -21,6 +21,7 @@ import qualified Data.Aeson as A
 
 import GithubWebhook.Types.Events.PushEvent
 import GithubWebhook.Types.Events.IssueCommentEvent
+
 import qualified Utils as U
 
 main :: IO ()

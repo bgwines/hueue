@@ -14,14 +14,14 @@ import GHC.Generics
 
 import qualified Utils
 
-import qualified GithubWebhook.Types.SmallUser as SmallUser
+import qualified GithubWebhook.Types.BigUser as BigUser
 
 data Comment = Comment
     { url :: T.Text
     , htmlUrl :: T.Text
     , issueUrl :: T.Text
     , id :: Integer
-    , user :: SmallUser.SmallUser
+    , user :: BigUser.BigUser
     , createdAt :: T.Text
     , updatedAt :: T.Text
     , body :: T.Text
