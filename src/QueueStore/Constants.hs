@@ -7,4 +7,4 @@ module QueueStore.Constants
 import qualified Data.ByteString.Internal as BSI
 
 queueStoreDBPath :: String
-queueStoreDBPath = "queueStoreDBPath"
+queueStoreDBPath = "DB-QueueStore"

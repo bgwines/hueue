@@ -31,7 +31,10 @@ library
                      , GithubWebhook.Types.Events.PushEvent
                      , GithubWebhook.Types.Events.IssueCommentEvent
                      , QueueStore.API
-                     , QueueStore.Types
+                     , QueueStore.Store
+                     , QueueStore.Types.Job
+                     , QueueStore.Types.Aliases
+                     , QueueStore.Types.JobQueue
                      , QueueStore.Constants
   build-depends:       base >= 4.7 && < 5
                      , transformers

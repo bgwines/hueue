@@ -26,11 +26,11 @@ import qualified GithubWebhook.Types.Events.IssueCommentEvent as ICEvent
 import qualified Utils as U
 
 import qualified QueueStore.API
-import qualified QueueStore.Types
+import qualified QueueStore.Types.Job
 
-requestToJob :: RequestParser.ParsedRequest -> Repo.Repo -> QueueStore.Types.Job
+requestToJob :: RequestParser.ParsedRequest -> Repo.Repo -> QueueStore.Types.Job.Job
 requestToJob (RequestParser.ParsedRequest _task srcBranch dstBranch) repo
-    = QueueStore.Types.SafeMergeJob repo srcBranch dstBranch
+    = QueueStore.Types.Job.SafeMergeJob repo srcBranch dstBranch
 
 handleIssueComment :: ICEvent.IssueCommentEvent -> EitherT Error IO ()
 handleIssueComment event = do

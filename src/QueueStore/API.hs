@@ -6,36 +6,36 @@ module QueueStore.API
 import qualified Data.Default as Default
 import qualified Data.Serialize as Serialize
 
-import qualified Database.LevelDB.Base as DB
-import qualified Database.LevelDB.Internal as DBInternal
-
+import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
 
-import qualified Utils as U
+import QueueStore.Types.Aliases (EIO, Error)
 
-import QueueStore.Types
+import qualified QueueStore.Store as Store
+
 import qualified QueueStore.Constants as Constants
+
+import qualified QueueStore.Types.Job as Job
+import qualified QueueStore.Types.JobQueue as JobQueue
+import QueueStore.Types.JobQueue ((<:>))
 
 import qualified GithubWebhook.Types.Repo as Repo
 
-enqueue :: Job -> EIO ()
-enqueue job = do
-    right ()
-    --liftIO $ do
-    --    db <- DB.open Constants.queueStoreDBPath Default.def
-    --    DB.put db Default.def repoID (Serialize.encode queue)
-    --    DBInternal.unsafeClose db
+import qualified Utils as U
 
-dequeue :: Repo.Repo -> EIO Job
+enqueue :: Job.Job -> EIO ()
+enqueue job = do
+    jobQueue <- liftIO $ Store.loadOrNewQueue (Job.repo job)
+    U.printIO jobQueue
+    Store.writeQueue (Job.repo job) (job <:> jobQueue)
+
+dequeue :: Repo.Repo -> EIO Job.Job
 dequeue repo = do
-    left "Not yet implemented"
-    --maybeQueue <- liftIO $ do
-    --    db <- DB.open Constants.queueStoreDBPath Default.def
-    --    maybeQueue <- DB.get db Default.def repoID
-    --    DBInternal.unsafeClose db
-    --    return maybeQueue
-    --hoistEither $ U.note errorMessage maybeQueue >>= Serialize.decode
-    --where
-    --    errorMessage :: String
-    --    errorMessage = "Could not fetch queue for repo with repoID " ++ show repoID
+    jobQueue <- Store.loadQueue repo
+    when (JobQueue.null jobQueue) $ do
+        left "Can't dequeue from an empty queue"
+
+    let job = JobQueue.head jobQueue
+    Store.writeQueue (Job.repo job) (JobQueue.tail jobQueue)
+    right job

@@ -36,3 +36,9 @@ TODO:
     access queuestore over network
 
     QueueStore.Types.Job replaces RequestParser.ParsedRequest? How will we deal with the Repo field?
+
+    don't serialize in QueueStore because it's slow?
+
+    concurrency everywhere
+
+    API.hs -- policy if can't load queue? Initialize upon repo setup?
