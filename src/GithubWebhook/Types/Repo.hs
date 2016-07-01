@@ -8,9 +8,14 @@ module GithubWebhook.Types.Repo
 import qualified Data.Text as T
 import qualified Data.Aeson as A
 import qualified Data.Aeson.TH as A
+import qualified Data.Serialize as S
+
+-- Serialize instance for Data.Text
+import Data.Serialize.Text
 
 import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.SmallUser as SmallUser
+
 
 import qualified Utils
 
@@ -92,3 +97,5 @@ $(A.deriveJSON
     A.defaultOptions
     {A.fieldLabelModifier = Utils.camelCaseToSnakeCase}
     ''Repo)
+
+instance S.Serialize Repo

@@ -19,7 +19,8 @@ import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
 
-import GithubWebhook.Constants (Error)
+import GithubWebhook.Types.Error (Error)
+import GithubWebhook.Constants (githubEvent)
 
 import qualified Data.Aeson as A
 
@@ -36,24 +37,28 @@ main = serve 4567
 serve :: Int -> IO ()
 serve port = Scotty.scotty port $ do
     Scotty.post "/payload" $ do
-        request <- Scotty.request
-        headers <- Scotty.headers
-        body <- Scotty.body
-        eitherT U.putStrLnIO return $ handleGithubWebrequest request headers body
+        handleGithubWebrequest <$> Scotty.request <*> Scotty.headers <*> Scotty.body
+            >>= eitherT U.putStrLnIO return
 
     Scotty.notFound $ do
         Scotty.text "There is no such route."
 
-handleGithubWebrequest :: Wai.Request -> [(TL.Text, TL.Text)] -> BSLI.ByteString -> EitherT String Scotty.ActionM ()
+handleGithubWebrequest
+    :: Wai.Request
+    -> [(TL.Text, TL.Text)]
+    -> BSLI.ByteString
+    -> EitherT String Scotty.ActionM ()
 handleGithubWebrequest _request headers body = do
     event <- hoistEither $ U.note "Could not extract event from Github POST header" maybeEvent
     liftIOEitherT . join . hoistEither $ case event of
-        "push"          -> Producer.handlePush         <$> (A.eitherDecode body :: Either String PushEvent)
-        "issue_comment" -> Producer.handleIssueComment <$> (A.eitherDecode body :: Either String IssueCommentEvent)
+        -- Can't use constants here :/
+        -- http://stackoverflow.com/questions/9336385/why-do-these-pattern-matches-overlap
+        "push"          -> Producer.handlePush         <$> A.eitherDecode body
+        "issue_comment" -> Producer.handleIssueComment <$> A.eitherDecode body
         _ -> Left $ "Cannot handle Github event " ++ (show event)
     where
         maybeEvent :: Maybe TL.Text
-        maybeEvent = fmap snd . L.find ((==) "X-GitHub-Event" . fst) $ headers
+        maybeEvent = fmap snd . L.find ((==) githubEvent . fst) $ headers
 
         liftIOEitherT :: (MonadIO m) => EitherT e IO a -> EitherT e m a
         liftIOEitherT = EitherT . liftIO . runEitherT

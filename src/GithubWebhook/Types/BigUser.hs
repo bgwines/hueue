@@ -10,6 +10,10 @@ import qualified Data.Text as T
 import qualified Data.Aeson as A
 import qualified Data.Aeson.TH as A
 
+-- Serialize instance for Data.Text
+import Data.Serialize.Text
+import qualified Data.Serialize as S
+
 import GHC.Generics
 
 import qualified Utils
@@ -37,3 +41,5 @@ $(A.deriveJSON
     A.defaultOptions
     {A.fieldLabelModifier = Utils.bigUserJSONFieldModifier}
     ''BigUser)
+
+instance S.Serialize BigUser

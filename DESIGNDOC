@@ -28,3 +28,11 @@ TODO:
 
     liftMonadTrans :: (MonadTrans t, Monad m, Monad m1) => (m a -> m1 a) -> t m a -> t m1 a
     liftMonadTrans liftMonad = lift . liftMonad . run
+
+    get rid of Strings
+
+    better error message on issue comment parse fail
+
+    access queuestore over network
+
+    QueueStore.Types.Job replaces RequestParser.ParsedRequest? How will we deal with the Repo field?

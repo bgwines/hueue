@@ -1,9 +1,7 @@
-module QueueStore.QueueStore
-( insert
-, load
+module QueueStore.API
+( enqueue
+, dequeue
 ) where
-
--- TODO: access over network; don't make a library
 
 import qualified Data.Default as Default
 import qualified Data.Serialize as Serialize
@@ -19,15 +17,19 @@ import qualified Utils as U
 import QueueStore.Types
 import qualified QueueStore.Constants as Constants
 
-insert :: RepoID -> JobQueue -> EIO ()
-insert repoID queue = do undefined
+import qualified GithubWebhook.Types.Repo as Repo
+
+enqueue :: Job -> EIO ()
+enqueue job = do
+    right ()
     --liftIO $ do
     --    db <- DB.open Constants.queueStoreDBPath Default.def
     --    DB.put db Default.def repoID (Serialize.encode queue)
     --    DBInternal.unsafeClose db
 
-load :: RepoID -> EIO JobQueue
-load repoID = do undefined
+dequeue :: Repo.Repo -> EIO Job
+dequeue repo = do
+    left "Not yet implemented"
     --maybeQueue <- liftIO $ do
     --    db <- DB.open Constants.queueStoreDBPath Default.def
     --    maybeQueue <- DB.get db Default.def repoID

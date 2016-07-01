@@ -19,6 +19,8 @@ library
                      , GithubWebhook.Server
                      , GithubWebhook.Producer
                      , GithubWebhook.Constants
+                     , GithubWebhook.RequestParser
+                     , GithubWebhook.Types.Error
                      , GithubWebhook.Types.Repo
                      , GithubWebhook.Types.Issue
                      , GithubWebhook.Types.Commit
@@ -28,9 +30,9 @@ library
                      , GithubWebhook.Types.PullRequest
                      , GithubWebhook.Types.Events.PushEvent
                      , GithubWebhook.Types.Events.IssueCommentEvent
+                     , QueueStore.API
                      , QueueStore.Types
                      , QueueStore.Constants
-                     , QueueStore.QueueStore
   build-depends:       base >= 4.7 && < 5
                      , transformers
                      , aeson
@@ -40,8 +42,11 @@ library
                      , data-default
                      , leveldb-haskell
                      , cereal
+                     , cereal-text
                      , scotty
                      , wai
+                     , parsec
+                     , cond
   default-language:    Haskell2010
 
 -- executable webhook
