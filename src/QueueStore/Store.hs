@@ -2,6 +2,7 @@ module QueueStore.Store
 ( loadQueue
 , loadOrNewQueue
 , writeQueue
+, loadQueueDEBUG
 ) where
 
 import qualified Data.ByteString as BS
@@ -47,6 +48,18 @@ loadQueue repo = do
     where
         errorMessage :: String
         errorMessage = "Could not fetch queue for repo with repoID " ++ show (repoID repo)
+
+loadQueueDEBUG :: Int -> EIO JobQueue.JobQueue
+loadQueueDEBUG repositoryID = do
+    maybeQueue <- liftIO $ do
+        db <- DB.open Constants.queueStoreDBPath createIfMissing
+        maybeQueue <- DB.get db Default.def (BSChar8.pack . show $ repositoryID)
+        DBInternal.unsafeClose db
+        return maybeQueue
+    hoistEither $ U.note errorMessage maybeQueue >>= Serialize.decode
+    where
+        errorMessage :: String
+        errorMessage = "Could not fetch queue for repo with repoID " ++ show repositoryID
 
 writeQueue :: Repo.Repo -> JobQueue.JobQueue -> EIO ()
 writeQueue repo jobQueue = do

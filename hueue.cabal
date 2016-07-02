@@ -36,6 +36,7 @@ library
                      , QueueStore.Types.Aliases
                      , QueueStore.Types.JobQueue
                      , QueueStore.Constants
+                     , HueueUI.Server
   build-depends:       base >= 4.7 && < 5
                      , transformers
                      , aeson
@@ -50,6 +51,7 @@ library
                      , wai
                      , parsec
                      , cond
+                     , yesod
   default-language:    Haskell2010
 
 -- executable webhook

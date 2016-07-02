@@ -1,24 +1,24 @@
-4 abstractions
+5 abstractions
     webhook (producer)
         receives webrequests from Github; forks handling of them
-        writes to db
+        writes to queuestore
 
         abstract into Hackage library eventually
 
     ui
         serves webrequests
-        queries db
+        queries queuestore
 
-    db
+    queuestore
         stores a map: repo -> job queue
 
-    consumer
-        regularly polls db
-        forks new jobs; executes them
-        updates db when task is consumed
-        talks to Travis
+    user / authentication datastore
 
-each of the 4 only interact with db; not each other
+    consumer
+        regularly polls queuestore
+        forks new jobs; executes them
+        updates queuestore when task is consumed
+        talks to Travis
 
 TODO:
     testing
@@ -42,3 +42,5 @@ TODO:
     concurrency everywhere
 
     API.hs -- policy if can't load queue? Initialize upon repo setup?
+
+    Repo.fullName to Repo DB

@@ -17,7 +17,17 @@ data Job = SafeMergeJob
     , srcBranch :: T.Text
     , dstBranch :: T.Text
     }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Generic)
+
+instance Show Job where
+    show (SafeMergeJob repo srcBranch dstBranch)
+        =  "Job "
+        ++ T.unpack (Repo.fullName repo)
+        ++ " "
+        ++ T.unpack srcBranch
+        ++ " "
+        ++ T.unpack dstBranch
+        ++ " "
 
 -- For DB storage
 instance S.Serialize Job

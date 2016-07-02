@@ -2,7 +2,7 @@
 {-# LANGUAGE InstanceSigs #-}
 
 module QueueStore.Types.JobQueue
-( JobQueue
+( JobQueue(..)
 , (<:>)
 , head
 , tail
