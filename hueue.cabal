@@ -16,6 +16,8 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src, lib
   exposed-modules:     Utils
+                     , Aliases
+                     , MonadImports
                      , GithubWebhook.Server
                      , GithubWebhook.Producer
                      , GithubWebhook.Constants
@@ -33,7 +35,6 @@ library
                      , QueueStore.API
                      , QueueStore.Store
                      , QueueStore.Types.Job
-                     , QueueStore.Types.Aliases
                      , QueueStore.Types.JobQueue
                      , QueueStore.Constants
                      , HueueUI.Dashboard

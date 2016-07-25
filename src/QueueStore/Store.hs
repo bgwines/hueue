@@ -17,10 +17,9 @@ import qualified Data.Serialize as Serialize
 import qualified Database.LevelDB.Base as DB
 import qualified Database.LevelDB.Internal as DBInternal
 
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
+import MonadImports
 
-import QueueStore.Types.Aliases (EIO, Error)
+import Aliases
 
 import qualified Utils as U
 

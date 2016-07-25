@@ -5,13 +5,8 @@ module GithubWebhook.Producer
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.Internal as BSLI
 
-import Data.Either
-import Data.Monoid
-import Control.Monad
-import Control.Applicative
+import MonadImports
 import Control.Conditional (whenM, unlessM)
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
 
 import GithubWebhook.Types.Error (Error)
 

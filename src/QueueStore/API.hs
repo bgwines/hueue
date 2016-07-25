@@ -8,11 +8,9 @@ module QueueStore.API
 import qualified Data.Default as Default
 import qualified Data.Serialize as Serialize
 
-import Control.Monad
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
+import MonadImports
 
-import QueueStore.Types.Aliases (EIO, Error)
+import Aliases
 
 import qualified QueueStore.Store as Store
 

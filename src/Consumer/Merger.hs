@@ -10,17 +10,12 @@ import qualified Data.ByteString.Lazy.Internal as BSLI
 
 import GHC.Generics
 
-import Data.Maybe
-import Data.Monoid
-import Control.Monad
-import Control.Applicative
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
+import MonadImports
 
 import qualified QueueStore.Types.Job as Job
 import qualified GithubWebhook.Types.Repo as Repo
 
-import QueueStore.Types.Aliases (EIO, Error)
+import Aliases
 
 import qualified Git.API as Git
 

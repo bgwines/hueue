@@ -12,12 +12,7 @@ import qualified Data.ByteString.Lazy.Internal as BSLI
 
 import GHC.Generics
 
-import Data.Maybe
-import Data.Monoid
-import Control.Monad
-import Control.Applicative
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Either
+import MonadImports
 
 import GithubWebhook.Types.Error (Error)
 import GithubWebhook.Constants (githubEvent)
