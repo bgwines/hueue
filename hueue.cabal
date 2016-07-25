@@ -56,7 +56,6 @@ library
                      , yesod
                      , shelly
                      , directory
-                     , yesod-auth-oauth2
   default-language:    Haskell2010
 
 -- executable webhook

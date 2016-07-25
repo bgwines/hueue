@@ -3,6 +3,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+module HueueUI.Dashboard (main) where
+
 import Yesod
 
 import Control.Monad.IO.Class
@@ -12,6 +14,7 @@ import qualified QueueStore.Store
 import qualified QueueStore.Types.JobQueue
 
 data HueueUI = HueueUI
+
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
 |]
@@ -25,7 +28,6 @@ prettyPrintQueue queue = show queue
 
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"
-    --toWidget [lucius| h1 { color: green; } |]
     toWidgetHead [hamlet|<h1>Hueue dashboard (powered by HueueUI! :o)|]
     addScriptRemote "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
     toWidget
