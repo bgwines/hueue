@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 module QueueStore.API
 ( enqueue
 , dequeue

@@ -1,6 +1,5 @@
 module GithubWebhook.Producer
 ( handleIssueComment
-, handlePush
 ) where
 
 import qualified Data.Text as T
@@ -32,17 +31,11 @@ requestToJob :: RequestParser.ParsedRequest -> Repo.Repo -> QueueStore.Types.Job
 requestToJob (RequestParser.ParsedRequest _task srcBranch dstBranch) repo
     = QueueStore.Types.Job.SafeMergeJob repo srcBranch dstBranch
 
-handleIssueComment :: ICEvent.IssueCommentEvent -> EitherT Error IO ()
+handleIssueComment :: (MonadIO m) => ICEvent.IssueCommentEvent -> EitherT Error m ()
 handleIssueComment event = do
-    U.putStrLnIO $ "Handling an issue comment!"
+    liftIO . putStrLn $ "Handling an issue comment!"
     request <- hoistEither . RequestParser.parse . Comment.body . ICEvent.comment $ event
-    U.printIO request
+    liftIO . print $ request
 
     -- TODO: over network
     QueueStore.API.enqueue $ requestToJob request (ICEvent.repository event)
-
-handlePush :: PEvent.PushEvent -> EitherT Error IO ()
-handlePush event = do
-    U.putStrLnIO $ "Handling a push!"
-    -- Do nothing
-    return ()

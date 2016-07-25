@@ -17,6 +17,7 @@ data HueueUI = HueueUI
 
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
+/clearQueue ClearQueueR GET
 |]
 instance Yesod HueueUI
 
@@ -25,6 +26,21 @@ eTqueue = QueueStore.Store.loadQueueDEBUG 61999075
 
 prettyPrintQueue :: QueueStore.Types.JobQueue.JobQueue -> String
 prettyPrintQueue queue = show queue
+
+eTClearResult :: EitherT String IO ()
+eTClearResult = QueueStore.Store.clearQueueDEBUG 61999075
+
+getClearQueueR = defaultLayout $ do
+    clearResult <- liftIO . runEitherT $ eTClearResult
+    toWidget
+        [hamlet|
+            <h2>Clearing the repo's jobqueue
+            $case clearResult
+                $of Left msg
+                    <p>Error when clearing queue; failed with error message #{msg}
+                $of Right ()
+                    <p>Cleared successfully!
+        |]
 
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"

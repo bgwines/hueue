@@ -50,15 +50,11 @@ handleGithubWebrequest
     -> EitherT String Scotty.ActionM ()
 handleGithubWebrequest _request headers body = do
     event <- hoistEither $ U.note "Could not extract event from Github POST header" maybeEvent
-    liftIOEitherT . join . hoistEither $ case event of
+    case event of
         -- Can't use constants here :/
         -- http://stackoverflow.com/questions/9336385/why-do-these-pattern-matches-overlap
-        "push"          -> Producer.handlePush         <$> A.eitherDecode body
-        "issue_comment" -> Producer.handleIssueComment <$> A.eitherDecode body
-        _ -> Left $ "Cannot handle Github event " ++ (show event)
+        "issue_comment" -> (hoistEither . A.eitherDecode $ body) >>= Producer.handleIssueComment
+        _ -> left $ "Cannot handle Github event " ++ (show event)
     where
         maybeEvent :: Maybe TL.Text
         maybeEvent = fmap snd . L.find ((==) githubEvent . fst) $ headers
-
-        liftIOEitherT :: (MonadIO m) => EitherT e IO a -> EitherT e m a
-        liftIOEitherT = EitherT . liftIO . runEitherT

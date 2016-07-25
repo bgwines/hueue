@@ -1,7 +1,10 @@
+{-# LANGUAGE RankNTypes #-}
+
 module QueueStore.Store
 ( loadQueue
 , loadOrNewQueue
 , writeQueue
+, clearQueueDEBUG
 , loadQueueDEBUG
 ) where
 
@@ -66,4 +69,11 @@ writeQueue repo jobQueue = do
     liftIO $ do
         db <- DB.open Constants.queueStoreDBPath createIfMissing
         DB.put db Default.def (repoID repo) (Serialize.encode jobQueue)
+        DBInternal.unsafeClose db
+
+clearQueueDEBUG :: Int -> EIO ()
+clearQueueDEBUG repositoryID = do
+    liftIO $ do
+        db <- DB.open Constants.queueStoreDBPath createIfMissing
+        DB.put db Default.def (BSChar8.pack . show $ repositoryID) (Serialize.encode JobQueue.newEmptyJobQueue)
         DBInternal.unsafeClose db
