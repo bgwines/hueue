@@ -14,6 +14,7 @@ import qualified Data.Text as T
 import qualified Text.Parsec as Parsec
 import qualified Text.Parsec.Error as Parsec
 
+import Debug.Trace
 
 data ParsedRequest
     = ParsedRequest
@@ -33,9 +34,10 @@ requestParser = do
         token = (T.pack <$> Parsec.many1 Parsec.letter) <* Parsec.spaces
 
 parse :: T.Text -> Either Error ParsedRequest
-parse
+parse text
     = mapLeft (concatMap Parsec.messageString . Parsec.errorMessages)
     . Parsec.parse requestParser ""
+    $ text
 
 mapLeft f (Left a) = Left $ f a
 mapLeft _ (Right b) = Right b

@@ -6,6 +6,7 @@ module Utils
 , hushT
 , note
 , hush
+, replaceFirst
 ) where
 
 import qualified Data.Char as Ch
@@ -45,3 +46,9 @@ note _ (Just x) = Right x
 hush :: Either l r -> Maybe r
 hush (Left _) = Nothing
 hush (Right r) = Just r
+
+replaceFirst :: (Eq a) => a -> a -> [a] -> [a]
+replaceFirst _ _ [] = []
+replaceFirst a b (x:xs)
+    | a == x = b:xs
+    | otherwise = x : replaceFirst a b xs

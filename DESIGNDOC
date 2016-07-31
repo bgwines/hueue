@@ -22,6 +22,7 @@
 
 TODO:
     testing
+    support -_123456789 in branch names
     docs
     mock DB / network for testing?
     handleGithubWebrequest types could be better?
