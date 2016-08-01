@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module GithubWebhook.Server (main) where
+module Main (main) where
 
 import qualified Web.Scotty as Scotty
 import qualified Network.Wai as Wai
@@ -44,6 +44,7 @@ handleGithubWebrequest
     -> BSLI.ByteString
     -> EitherT String Scotty.ActionM ()
 handleGithubWebrequest _request headers body = do
+    U.putStrLnIO "handling a Github web request!"
     event <- hoistEither $ U.note "Could not extract event from Github POST header" maybeEvent
     case event of
         -- Can't use constants here :/

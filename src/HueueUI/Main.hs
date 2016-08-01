@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module HueueUI.Dashboard (main) where
+module Main (main) where
 
 import Yesod
 
@@ -73,7 +73,7 @@ getHomeR = defaultLayout $ do
         |]
     let oauthURL = "https://github.com/login/oauth/authorize"
             ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
-            ++ "&redirect_uri=" ++ "localhost/oauthRedirect"
+            ++ "&redirect_uri=" ++ "http://52.43.33.20:3000/oauthRedirect" -- TODO: Yesod this up
             ++ "&scope="        ++ "repo"
             ++ "&state="        ++ "142857" -- TODO: dynamically generate
             ++ "&allow_signup=" ++ "true" :: String
