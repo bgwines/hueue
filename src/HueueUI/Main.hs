@@ -23,13 +23,26 @@ mkYesod "HueueUI" [parseRoutes|
 |]
 instance Yesod HueueUI
 
+
+state = "142857" -- TODO: dynamically generate
+
 prettyPrintQueue :: QueueStore.Types.JobQueue.JobQueue -> String
 prettyPrintQueue queue = show queue
 
 getOAuthRedirectR = defaultLayout $ do
+    maybeCode <- lookupGetParam "code"
+    maybeState <- lookupGetParam "state"
+    let maybeCodeState = liftM2 (,) maybeCode maybeState
     toWidget
         [hamlet|
-            <h1>"hello O____O"
+            $maybe (code, state) <- maybeCodeState
+                <h1>"hello O____O"
+                <h2>code
+                <p>#{code}
+                <h2>state
+                <p>#{state}
+            $nothing
+                <h1>Fatal: not given code or state
             |]
 
 getClearQueueR = defaultLayout $ do
@@ -75,7 +88,7 @@ getHomeR = defaultLayout $ do
             ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
             ++ "&redirect_uri=" ++ "http://52.43.33.20:3000/oauthRedirect" -- TODO: Yesod this up
             ++ "&scope="        ++ "repo"
-            ++ "&state="        ++ "142857" -- TODO: dynamically generate
+            ++ "&state="        ++ state
             ++ "&allow_signup=" ++ "true" :: String
     toWidget
         [hamlet|
