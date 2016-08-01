@@ -117,8 +117,13 @@ executable hueueui
                      , cereal-text
                      , cond
                      , either
+                     , http-conduit
+                     , network
+                     , cgi
+                     , convertible
   other-modules:
                        Aliases
+                     , HueueUI.Types
                      , GithubWebhook.Types.BigUser
                      , GithubWebhook.Types.Repo
                      , GithubWebhook.Types.SmallUser
@@ -129,6 +134,8 @@ executable hueueui
                      , QueueStore.Types.Job
                      , QueueStore.Types.JobQueue
                      , Utils
+                     , TokenStore.Store
+                     , TokenStore.Constants
   default-language:    Haskell2010
 
 test-suite hueue-test

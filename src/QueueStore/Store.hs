@@ -64,15 +64,13 @@ loadQueueDEBUG repositoryID = do
         errorMessage = "Could not fetch queue for repo with repoID " ++ show repositoryID
 
 writeQueue :: Repo.Repo -> JobQueue.JobQueue -> EIO ()
-writeQueue repo jobQueue = do
-    liftIO $ do
-        db <- DB.open Constants.queueStoreDBPath createIfMissing
-        DB.put db Default.def (repoID repo) (Serialize.encode jobQueue)
-        DBInternal.unsafeClose db
+writeQueue repo jobQueue = liftIO $ do
+    db <- DB.open Constants.queueStoreDBPath createIfMissing
+    DB.put db Default.def (repoID repo) (Serialize.encode jobQueue)
+    DBInternal.unsafeClose db
 
 clearQueueDEBUG :: Int -> EIO ()
-clearQueueDEBUG repositoryID = do
-    liftIO $ do
-        db <- DB.open Constants.queueStoreDBPath createIfMissing
-        DB.put db Default.def (BSChar8.pack . show $ repositoryID) (Serialize.encode JobQueue.newEmptyJobQueue)
-        DBInternal.unsafeClose db
+clearQueueDEBUG repositoryID = liftIO $ do
+    db <- DB.open Constants.queueStoreDBPath createIfMissing
+    DB.put db Default.def (BSChar8.pack . show $ repositoryID) (Serialize.encode JobQueue.newEmptyJobQueue)
+    DBInternal.unsafeClose db

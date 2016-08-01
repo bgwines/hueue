@@ -5,11 +5,14 @@ module Utils
 , putStrLnIO
 , hushT
 , note
+, amplifyError
 , hush
 , replaceFirst
 ) where
 
 import qualified Data.Char as Ch
+
+import Control.Exception
 
 import MonadImports
 
@@ -38,9 +41,12 @@ hushT :: (Monad m) => EitherT l m r -> MaybeT m r
 hushT = MaybeT . liftM hush . runEitherT
 
 -- | Convert, with a error message to be used if the `Maybe` is `Nothing`.
-note :: Error -> Maybe b -> Either Error b
-note error Nothing = Left error
+note :: e -> Maybe a -> Either e a
+note e Nothing = Left e
 note _ (Just x) = Right x
+
+amplifyError :: (Monad m, Exception e) => EitherT e m a -> EitherT SomeException m a
+amplifyError = bimapEitherT toException id
 
 -- | Convert, supressing the error message.
 hush :: Either l r -> Maybe r

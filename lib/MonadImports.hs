@@ -1,6 +1,7 @@
 module MonadImports
 ( module Data.Maybe
 , module Data.Either
+, module Data.Either.Combinators
 , module Data.Monoid
 , module Control.Monad
 , module Control.Applicative
@@ -12,6 +13,7 @@ module MonadImports
 
 import Data.Maybe
 import Data.Either
+import Data.Either.Combinators (fromLeft, fromRight)
 import Data.Monoid
 
 import Control.Monad
