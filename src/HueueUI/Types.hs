@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -11,6 +12,7 @@ module HueueUI.Types
 
 import Yesod
 
+import Aliases
 import MonadImports
 
 import qualified Utils as U
@@ -81,7 +83,7 @@ getHomeR = defaultLayout $ do
         |]
     let oauthURL = "https://github.com/login/oauth/authorize"
             ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
-            ++ "&redirect_uri=" ++ "http://52.43.33.20:3000/oauthRedirect" -- TODO: Yesod this up
+            ++ "&redirect_uri=" ++ "http://52.42.198.210:3000/oauthRedirect" -- TODO: Yesod this up
             ++ "&scope="        ++ "repo"
             ++ "&state="        ++ "142857" -- TODO
             ++ "&allow_signup=" ++ "true" :: String
@@ -123,7 +125,7 @@ getAccessTokenPOSTParams code =
     [ ("client_id"    , "416fdf5ed5fb66f16bd3") -- TODO: DB this up
     , ("client_secret", "298f94844d493cc1deccf97ba54a268d1b5690a8") -- TODO
     , ("code"         , code)
-    , ("redirect_uri" , "http://52.43.33.20:3000/receiveAccessToken") -- TODO: Yesod this up
+    , ("redirect_uri" , "http://52.42.198.210:3000/receiveAccessToken") -- TODO: Yesod this up
     , ("state"        , "142857") -- TODO (T.showText code)
     ]
 
@@ -140,10 +142,19 @@ sendHTTPRequest
     -> [(BS.ByteString, BS.ByteString)]
     -> RequestModifier
     -> RequestModifier
-    -> EitherT SomeException IO (HTTP.Response L.ByteString)
-sendHTTPRequest url params addHeaders specifyMethod = EitherT . try $ Network.withSocketsDo $ do
-    req <- (addHeaders . specifyMethod . HTTP.urlEncodedBody params) <$> HTTP.parseUrl url
-    HTTP.newManager HTTP.tlsManagerSettings >>= HTTP.httpLbs req
+    -> EIO (HTTP.Response L.ByteString)
+sendHTTPRequest url params addHeaders specifyMethod
+    = bimapEitherT displayException' id
+    . EitherT
+    . liftIO
+    . try
+    . Network.withSocketsDo
+    $ do
+        req <- (addHeaders . specifyMethod . HTTP.urlEncodedBody params) <$> HTTP.parseUrl url
+        HTTP.newManager HTTP.tlsManagerSettings >>= HTTP.httpLbs req
+    where
+        displayException' :: SomeException -> String
+        displayException' = displayException
 
 -- for debugging only
 getHTTPRequest
@@ -155,40 +166,33 @@ getHTTPRequest
 getHTTPRequest url params addHeaders specifyMethod = Network.withSocketsDo $ do
     (specifyMethod . addHeaders . HTTP.urlEncodedBody params) <$> HTTP.parseUrl url
 
--- TODO: move this somewhere
-instance Exception String
-
-maybeToEitherT :: (Monad m) => String -> Maybe a -> EitherT SomeException m a
-maybeToEitherT msg = U.amplifyError . hoistEither . U.note msg
-
 getOAuthRedirectR :: HandlerT HueueUI IO Html
 getOAuthRedirectR = defaultLayout $ do
     maybeCodeState <- liftA2 (,) <$> lookupGetParam "code" <*> lookupGetParam "state"
     eitherBlockResult <- liftIO . runEitherT $ do
         let extractionErrorMsg = "Fatal: couldn't extract code and state" :: String
-        (accessTokenRequestCode, state) <- maybeToEitherT extractionErrorMsg $ maybeCodeState
+        (accessTokenRequestCode, state) <- hoistEither . U.note extractionErrorMsg $ maybeCodeState
 
-        let incorrectStateMessage = "Fatal: security attack detected; aborting authentication" :: String
         unless (state == "142857") $
-            left (toException incorrectStateMessage)
+            left "Fatal: security attack detected; aborting authentication"
 
         let url = "https://github.com/login/oauth/access_token"
         let params = getAccessTokenPOSTParams (C.convert accessTokenRequestCode)
         resultBody <- HTTP.responseBody <$> sendHTTPRequest url params id methodPost
         let decodedResultBody = Network.CGI.formDecode . BSChar8.unpack . L.toStrict $ resultBody
-        accessToken <- maybeToEitherT "Fatal: couldn't extract access token" $ snd <$> List.find ((==) "access_token" . fst) decodedResultBody
+        accessToken <- hoistEither . U.note "Fatal: couldn't extract access token" $ snd <$> List.find ((==) "access_token" . fst) decodedResultBody
 
         --TokenStore.writeToken accessToken
 
         let addHeaders r = r { HTTP.requestHeaders = [("User-Agent", "hueue"), ("Authorization", BSChar8.pack ("token " ++ accessToken))]}
         userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
-        user <- (U.amplifyError . hoistEither . A.eitherDecode $ userJSON) :: EitherT SomeException IO User.BigUser
+        user <- (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
         right user
     case eitherBlockResult of
-        Left someException ->
+        Left errorMsg ->
             toWidget
                 [hamlet|
-                    <p>#{show someException}
+                    <p>#{show errorMsg}
                     |]
 
         Right user ->

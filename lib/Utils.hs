@@ -5,7 +5,6 @@ module Utils
 , putStrLnIO
 , hushT
 , note
-, amplifyError
 , hush
 , replaceFirst
 ) where
@@ -44,9 +43,6 @@ hushT = MaybeT . liftM hush . runEitherT
 note :: e -> Maybe a -> Either e a
 note e Nothing = Left e
 note _ (Just x) = Right x
-
-amplifyError :: (Monad m, Exception e) => EitherT e m a -> EitherT SomeException m a
-amplifyError = bimapEitherT toException id
 
 -- | Convert, supressing the error message.
 hush :: Either l r -> Maybe r
