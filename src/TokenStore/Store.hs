@@ -26,25 +26,12 @@ import qualified TokenStore.Constants as Constants
 
 import qualified GithubWebhook.Types.Repo as Repo
 
-createIfMissing :: DB.Options
-createIfMissing = DB.defaultOptions{ DB.createIfMissing = True }
+import qualified DataStore
 
 -- TODO: RepoID newtype
--- TODO: share with QueueStore.Store
 loadToken :: Integer -> EIO BS.ByteString
-loadToken repoID = do
-    maybeToken <- liftIO $ do
-        db <- DB.open Constants.tokenStoreDBPath createIfMissing
-        maybeToken <- DB.get db Default.def (BSChar8.pack . show $ repoID)
-        DBInternal.unsafeClose db
-        return maybeToken
-    hoistEither $ U.note errorMessage maybeToken
-    where
-        errorMessage :: String
-        errorMessage = "Could not fetch token for repo with repoID " ++ show repoID
+loadToken repoID = DataStore.load (BSChar8.pack . show $ repoID) Constants.tokenStoreDBPath
 
 writeToken :: BS.ByteString -> Integer -> EIO ()
-writeToken token repoID = liftIO $ do
-    db <- DB.open Constants.tokenStoreDBPath createIfMissing
-    DB.put db Default.def (BSChar8.pack . show $ repoID) token
-    DBInternal.unsafeClose db
+writeToken token repoID
+    = DataStore.write (BSChar8.pack . show $ repoID) token Constants.tokenStoreDBPath

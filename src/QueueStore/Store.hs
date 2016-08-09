@@ -29,11 +29,10 @@ import qualified QueueStore.Constants as Constants
 
 import qualified GithubWebhook.Types.Repo as Repo
 
+import qualified DataStore
+
 repoID :: Repo.Repo -> BS.ByteString
 repoID = BSChar8.pack . show . Repo.id
-
-createIfMissing :: DB.Options
-createIfMissing = DB.defaultOptions{ DB.createIfMissing = True }
 
 loadOrNewQueue :: Repo.Repo -> IO JobQueue.JobQueue
 loadOrNewQueue repo
@@ -41,36 +40,14 @@ loadOrNewQueue repo
 
 loadQueue :: Repo.Repo -> EIO JobQueue.JobQueue
 loadQueue repo = do
-    maybeQueue <- liftIO $ do
-        db <- DB.open Constants.queueStoreDBPath createIfMissing
-        maybeQueue <- DB.get db Default.def (repoID repo)
-        DBInternal.unsafeClose db
-        return maybeQueue
-    hoistEither $ U.note errorMessage maybeQueue >>= Serialize.decode
-    where
-        errorMessage :: String
-        errorMessage = "Could not fetch queue for repo with repoID " ++ show (repoID repo)
+    DataStore.load (BSChar8.pack . show $ repoID repo) Constants.queueStoreDBPath >>= (hoistEither . Serialize.decode)
 
 loadQueueDEBUG :: Int -> EIO JobQueue.JobQueue
 loadQueueDEBUG repositoryID = do
-    maybeQueue <- liftIO $ do
-        db <- DB.open Constants.queueStoreDBPath createIfMissing
-        maybeQueue <- DB.get db Default.def (BSChar8.pack . show $ repositoryID)
-        DBInternal.unsafeClose db
-        return maybeQueue
-    hoistEither $ U.note errorMessage maybeQueue >>= Serialize.decode
-    where
-        errorMessage :: String
-        errorMessage = "Could not fetch queue for repo with repoID " ++ show repositoryID
+    DataStore.load (BSChar8.pack . show $ repositoryID) Constants.queueStoreDBPath >>= (hoistEither . Serialize.decode)
 
 writeQueue :: Repo.Repo -> JobQueue.JobQueue -> EIO ()
-writeQueue repo jobQueue = liftIO $ do
-    db <- DB.open Constants.queueStoreDBPath createIfMissing
-    DB.put db Default.def (repoID repo) (Serialize.encode jobQueue)
-    DBInternal.unsafeClose db
+writeQueue repo jobQueue = DataStore.write (BSChar8.pack . show $ repoID repo) (Serialize.encode jobQueue) Constants.queueStoreDBPath
 
 clearQueueDEBUG :: Int -> EIO ()
-clearQueueDEBUG repositoryID = liftIO $ do
-    db <- DB.open Constants.queueStoreDBPath createIfMissing
-    DB.put db Default.def (BSChar8.pack . show $ repositoryID) (Serialize.encode JobQueue.newEmptyJobQueue)
-    DBInternal.unsafeClose db
+clearQueueDEBUG repositoryID = DataStore.write (BSChar8.pack . show $ repositoryID) (Serialize.encode JobQueue.newEmptyJobQueue) Constants.queueStoreDBPath

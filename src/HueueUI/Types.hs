@@ -156,16 +156,6 @@ sendHTTPRequest url params addHeaders specifyMethod
         displayException' :: SomeException -> String
         displayException' = displayException
 
--- for debugging only
-getHTTPRequest
-    :: String
-    -> [(BS.ByteString, BS.ByteString)]
-    -> RequestModifier
-    -> RequestModifier
-    -> IO (HTTP.Request)
-getHTTPRequest url params addHeaders specifyMethod = Network.withSocketsDo $ do
-    (specifyMethod . addHeaders . HTTP.urlEncodedBody params) <$> HTTP.parseUrl url
-
 getOAuthRedirectR :: HandlerT HueueUI IO Html
 getOAuthRedirectR = defaultLayout $ do
     maybeCodeState <- liftA2 (,) <$> lookupGetParam "code" <*> lookupGetParam "state"
