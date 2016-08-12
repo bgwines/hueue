@@ -38,6 +38,8 @@ import qualified Network.HTTP.Conduit as HTTP
 import qualified QueueStore.Store
 import qualified QueueStore.Types.JobQueue
 
+import qualified TokenStore.Store as TokenStore
+
 import qualified GithubWebhook.Types.BigUser as User
 
 data HueueUI = HueueUI
@@ -57,15 +59,6 @@ getHomeR :: HandlerT HueueUI IO Html
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"
     toWidgetHead [hamlet|<h1>Hueue dashboard (powered by HueueUI! :o)|]
-    addScriptRemote "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
-    toWidget
-        [julius|
-            $(function() {
-                $("h1").click(function(){
-                    alert("You clicked on the heading!");
-                });
-            });
-        |]
     equeue <- liftIO . runEitherT $ QueueStore.Store.loadQueueDEBUG 61999075
     toWidget
         [hamlet|
@@ -83,7 +76,7 @@ getHomeR = defaultLayout $ do
         |]
     let oauthURL = "https://github.com/login/oauth/authorize"
             ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
-            ++ "&redirect_uri=" ++ "http://52.42.198.210:3000/oauthRedirect" -- TODO: Yesod this up
+            ++ "&redirect_uri=" ++ "http://52.42.19.45:3000/oauthRedirect" -- TODO: Yesod this up
             ++ "&scope="        ++ "repo"
             ++ "&state="        ++ "142857" -- TODO
             ++ "&allow_signup=" ++ "true" :: String
@@ -125,7 +118,7 @@ getAccessTokenPOSTParams code =
     [ ("client_id"    , "416fdf5ed5fb66f16bd3") -- TODO: DB this up
     , ("client_secret", "298f94844d493cc1deccf97ba54a268d1b5690a8") -- TODO
     , ("code"         , code)
-    , ("redirect_uri" , "http://52.42.198.210:3000/receiveAccessToken") -- TODO: Yesod this up
+    , ("redirect_uri" , "http://52.42.19.45:3000/receiveAccessToken") -- TODO: Yesod this up
     , ("state"        , "142857") -- TODO (T.showText code)
     ]
 
@@ -172,11 +165,12 @@ getOAuthRedirectR = defaultLayout $ do
         let decodedResultBody = Network.CGI.formDecode . BSChar8.unpack . L.toStrict $ resultBody
         accessToken <- hoistEither . U.note "Fatal: couldn't extract access token" $ snd <$> List.find ((==) "access_token" . fst) decodedResultBody
 
-        --TokenStore.writeToken accessToken
-
         let addHeaders r = r { HTTP.requestHeaders = [("User-Agent", "hueue"), ("Authorization", BSChar8.pack ("token " ++ accessToken))]}
         userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
         user <- (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
+
+        TokenStore.writeToken (BSChar8.pack accessToken) user
+
         right user
     case eitherBlockResult of
         Left errorMsg ->

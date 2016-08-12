@@ -24,14 +24,14 @@ import qualified Utils as U
 
 import qualified TokenStore.Constants as Constants
 
-import qualified GithubWebhook.Types.Repo as Repo
+import qualified GithubWebhook.Types.BigUser as User
 
 import qualified DataStore
 
--- TODO: RepoID newtype
-loadToken :: Integer -> EIO BS.ByteString
-loadToken repoID = DataStore.load (BSChar8.pack . show $ repoID) Constants.tokenStoreDBPath
+-- TODO: user ID newtype
+loadToken :: User.BigUser -> EIO BS.ByteString
+loadToken user = DataStore.load (BSChar8.pack . show . User.id $ user) Constants.tokenStoreDBPath
 
-writeToken :: BS.ByteString -> Integer -> EIO ()
-writeToken token repoID
-    = DataStore.write (BSChar8.pack . show $ repoID) token Constants.tokenStoreDBPath
+writeToken :: BS.ByteString -> User.BigUser -> EIO ()
+writeToken token user
+    = DataStore.write (BSChar8.pack . show . User.id $ user) token Constants.tokenStoreDBPath
