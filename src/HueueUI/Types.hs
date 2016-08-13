@@ -35,10 +35,9 @@ import qualified Network (withSocketsDo)
 import qualified Network.CGI (formDecode)
 import qualified Network.HTTP.Conduit as HTTP
 
+import qualified TokenStore.Store
 import qualified QueueStore.Store
 import qualified QueueStore.Types.JobQueue
-
-import qualified TokenStore.Store as TokenStore
 
 import qualified GithubWebhook.Types.BigUser as User
 
@@ -58,8 +57,9 @@ prettyPrintQueue = show
 getHomeR :: HandlerT HueueUI IO Html
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"
-    toWidgetHead [hamlet|<h1>Hueue dashboard (powered by HueueUI! :o)|]
+    toWidgetHead [hamlet|<h1>Hueue admin dashboard :o|]
     equeue <- liftIO . runEitherT $ QueueStore.Store.loadQueueDEBUG 61999075
+    etoken <- liftIO . runEitherT $ TokenStore.Store.loadTokenDEBUG 2442246
     toWidget
         [hamlet|
             <h2>Jobs:
@@ -73,6 +73,12 @@ getHomeR = defaultLayout $ do
                         <ul>
                             $forall job <- QueueStore.Types.JobQueue.queue queue
                                 <li>#{show job}
+            <h2>Tokens:
+            $case etoken
+                $of Left msg
+                    <p>Error when loading token; failed with error message #{msg}
+                $of Right token
+                    <p>#{show token}
         |]
     let oauthURL = "https://github.com/login/oauth/authorize"
             ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
@@ -169,9 +175,10 @@ getOAuthRedirectR = defaultLayout $ do
         userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
         user <- (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
 
-        TokenStore.writeToken (BSChar8.pack accessToken) user
+        TokenStore.Store.writeToken (BSChar8.pack accessToken) user
+        eitherWrittenToken <- liftIO . runEitherT $ TokenStore.Store.loadToken user
 
-        right user
+        right (user, eitherWrittenToken)
     case eitherBlockResult of
         Left errorMsg ->
             toWidget
@@ -179,8 +186,9 @@ getOAuthRedirectR = defaultLayout $ do
                     <p>#{show errorMsg}
                     |]
 
-        Right user ->
+        Right (user, writtenAccessToken) ->
             toWidget
                 [hamlet|
                     <p>#{show user}
+                    <p>#{show writtenAccessToken}
                     |]

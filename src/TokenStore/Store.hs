@@ -3,6 +3,7 @@
 module TokenStore.Store
 ( loadToken
 , writeToken
+, loadTokenDEBUG
 ) where
 
 import qualified Data.Convertible as C
@@ -28,7 +29,9 @@ import qualified GithubWebhook.Types.BigUser as User
 
 import qualified DataStore
 
--- TODO: user ID newtype
+loadTokenDEBUG :: Integer -> EIO BS.ByteString
+loadTokenDEBUG userID = DataStore.load (BSChar8.pack . show $ userID) Constants.tokenStoreDBPath
+
 loadToken :: User.BigUser -> EIO BS.ByteString
 loadToken user = DataStore.load (BSChar8.pack . show . User.id $ user) Constants.tokenStoreDBPath
 
