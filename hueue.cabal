@@ -56,6 +56,9 @@ library
                      , yesod
                      , shelly
                      , directory
+                     , persistent-sqlite
+                     , persistent
+                     , persistent-template
   default-language:    Haskell2010
 
 executable webhook
@@ -76,6 +79,10 @@ executable webhook
                      , parsec
                      , cond
                      , either
+                     , persistent-sqlite
+                     , persistent-sqlite
+                     , persistent
+                     , persistent-template
   other-modules:
                        Aliases
                      , GithubWebhook.Constants
@@ -123,6 +130,11 @@ executable hueueui
                      , network
                      , cgi
                      , convertible
+                     , persistent-sqlite
+                     , persistent
+                     , persistent-template
+                     , resourcet
+                     , monad-logger
   other-modules:
                        Aliases
                      , HueueUI.Types
@@ -136,8 +148,6 @@ executable hueueui
                      , QueueStore.Types.Job
                      , QueueStore.Types.JobQueue
                      , Utils
-                     , TokenStore.Store
-                     , TokenStore.Constants
                      , DataStore
   default-language:    Haskell2010
 

@@ -27,7 +27,8 @@ import qualified Utils as U
 enqueue :: Job.Job -> EIO ()
 enqueue job = do
     jobQueue <- liftIO $ Store.loadOrNewQueue (Job.repo job)
-    U.printIO jobQueue
+    U.putStrLnIO "Updated jobQueue:"
+    U.printIO (job <:> jobQueue)
     Store.writeQueue (Job.repo job) (job <:> jobQueue)
 
 dequeue :: Repo.Repo -> EIO Job.Job

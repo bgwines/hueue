@@ -32,5 +32,4 @@ handleIssueComment event = do
     request <- hoistEither . RequestParser.parse . Comment.body . ICEvent.comment $ event
     liftIO . print $ request
 
-    -- TODO: over network
     QueueStore.API.enqueue $ requestToJob request (ICEvent.repository event)

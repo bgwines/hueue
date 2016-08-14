@@ -1,7 +1,9 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -35,13 +37,17 @@ import qualified Network (withSocketsDo)
 import qualified Network.CGI (formDecode)
 import qualified Network.HTTP.Conduit as HTTP
 
-import qualified TokenStore.Store
+import qualified Token
 import qualified QueueStore.Store
 import qualified QueueStore.Types.JobQueue
 
 import qualified GithubWebhook.Types.BigUser as User
 
-data HueueUI = HueueUI
+import Database.Persist
+import Database.Persist.TH
+import Database.Persist.Sqlite
+
+data HueueUI = HueueUI ConnectionPool
 
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
@@ -51,15 +57,20 @@ mkYesod "HueueUI" [parseRoutes|
 |]
 instance Yesod HueueUI
 
-prettyPrintQueue :: QueueStore.Types.JobQueue.JobQueue -> String
-prettyPrintQueue = show
+instance YesodPersist HueueUI where
+    type YesodPersistBackend HueueUI = SqlBackend
+
+    runDB :: YesodDB HueueUI a -> HandlerT HueueUI IO a
+    runDB action = do
+        HueueUI pool <- getYesod
+        runSqlPool action pool
 
 getHomeR :: HandlerT HueueUI IO Html
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"
     toWidgetHead [hamlet|<h1>Hueue admin dashboard :o|]
     equeue <- liftIO . runEitherT $ QueueStore.Store.loadQueueDEBUG 61999075
-    etoken <- liftIO . runEitherT $ TokenStore.Store.loadTokenDEBUG 2442246
+    mtoken <- handlerToWidget . runDB $ getBy (Token.UniqueUserID 2442246)
     toWidget
         [hamlet|
             <h2>Jobs:
@@ -73,11 +84,11 @@ getHomeR = defaultLayout $ do
                         <ul>
                             $forall job <- QueueStore.Types.JobQueue.queue queue
                                 <li>#{show job}
-            <h2>Tokens:
-            $case etoken
-                $of Left msg
-                    <p>Error when loading token; failed with error message #{msg}
-                $of Right token
+            <h2>Jobs:
+            $case mtoken
+                $of Nothing
+                    <p>Error when loading token
+                $of Just token
                     <p>#{show token}
         |]
     let oauthURL = "https://github.com/login/oauth/authorize"
@@ -174,11 +185,7 @@ getOAuthRedirectR = defaultLayout $ do
         let addHeaders r = r { HTTP.requestHeaders = [("User-Agent", "hueue"), ("Authorization", BSChar8.pack ("token " ++ accessToken))]}
         userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
         user <- (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
-
-        TokenStore.Store.writeToken (BSChar8.pack accessToken) user
-        eitherWrittenToken <- liftIO . runEitherT $ TokenStore.Store.loadToken user
-
-        right (user, eitherWrittenToken)
+        right (user, accessToken)
     case eitherBlockResult of
         Left errorMsg ->
             toWidget
@@ -186,9 +193,13 @@ getOAuthRedirectR = defaultLayout $ do
                     <p>#{show errorMsg}
                     |]
 
-        Right (user, writtenAccessToken) ->
+        Right (user, accessToken) -> do
+            let userIDInt = fromIntegral $ User.id user
+            handlerToWidget . runDB $ insert (Token.OAuth2Token userIDInt accessToken)
+            eitherWrittenToken <- handlerToWidget . runDB $ getBy (Token.UniqueUserID userIDInt)
+
             toWidget
                 [hamlet|
                     <p>#{show user}
-                    <p>#{show writtenAccessToken}
+                    <p>#{show eitherWrittenToken}
                     |]
