@@ -35,7 +35,7 @@ import Job
 
 main :: IO ()
 main = runStderrLoggingT $ do
-    connectionPool <- createSqlitePool "webhookPool" 10
+    connectionPool <- createSqlitePool "commonPool" 10
     runSqlPool (runMigration migrateAll) connectionPool
     liftIO $ serve 4567 connectionPool
 

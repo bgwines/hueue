@@ -41,6 +41,6 @@ dequeue connectionPool repo = liftIO . runStderrLoggingT $ do
     let repoID = fromIntegral $ Repo.id repo
     let action = (selectList [Job.JobRepoID ==. repoID] [])
     jobs <- runSqlPool action connectionPool
-    let Entity key job = head jobs
+    let Entity key job = head jobs --- TODO: null check
     runSqlPool (delete key) connectionPool
     return job

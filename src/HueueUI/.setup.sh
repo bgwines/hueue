@@ -11,3 +11,4 @@ cd leveldb-1.9.0; make;
 sudo mv libleveldb.* /usr/local/lib;
 cd include; sudo cp -R leveldb /usr/local/include; sudo ldconfig;
 cd ../..; stack build;
+sudo apt-get install sqlite

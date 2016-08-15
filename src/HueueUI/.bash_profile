@@ -1,5 +1,7 @@
 export PATH="$PATH:/home/ubuntu/.local/bin"
 
+alias gs="git status -s"
+
 alias h="cd /home/ubuntu/hueue; .stack-work/dist/x86_64-linux/C\
 abal-1.22.4.0/build/hueueui/hueueui"
 alias w="cd /home/ubuntu/hueue; .stack-work/dist/x86_64-linux/C\

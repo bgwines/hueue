@@ -19,7 +19,7 @@ import HueueUI.Types
 
 main :: IO ()
 main = runStderrLoggingT $ do
-    connectionPool <- createSqlitePool "hueueUIPool" 10
+    connectionPool <- createSqlitePool "commonPool" 10
     runSqlPool (runMigration Job.migrateAll) connectionPool
     runSqlPool (runMigration Token.migrateAll) connectionPool
     liftIO $ warp 3000 (HueueUI connectionPool)
