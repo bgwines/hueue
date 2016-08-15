@@ -1,4 +1,12 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module QueueStore.API
 ( enqueue
@@ -12,31 +20,27 @@ import MonadImports
 
 import Aliases
 
-import qualified QueueStore.Store as Store
-
-import qualified QueueStore.Constants as Constants
-
-import qualified QueueStore.Types.Job as Job
-import qualified QueueStore.Types.JobQueue as JobQueue
-import QueueStore.Types.JobQueue ((<:>))
+import qualified Job
 
 import qualified GithubWebhook.Types.Repo as Repo
 
 import qualified Utils as U
 
-enqueue :: Job.Job -> EIO ()
-enqueue job = do
-    jobQueue <- liftIO $ Store.loadOrNewQueue (Job.repo job)
-    U.putStrLnIO "Updated jobQueue:"
-    U.printIO (job <:> jobQueue)
-    Store.writeQueue (Job.repo job) (job <:> jobQueue)
+import Database.Persist
+import Database.Persist.TH
+import Database.Persist.Sqlite
+import Control.Monad.Logger (runStderrLoggingT)
 
-dequeue :: Repo.Repo -> EIO Job.Job
-dequeue repo = do
-    jobQueue <- Store.loadQueue repo
-    when (JobQueue.null jobQueue) $ do
-        left "Can't dequeue from an empty queue"
+enqueue :: ConnectionPool -> Job.Job -> EIO ()
+enqueue connectionPool job = liftIO . runStderrLoggingT $ do
+    runSqlPool (insert job) connectionPool
+    return ()
 
-    let job = JobQueue.head jobQueue
-    Store.writeQueue (Job.repo job) (JobQueue.tail jobQueue)
-    right job
+dequeue :: ConnectionPool -> Repo.Repo -> EIO Job.Job
+dequeue connectionPool repo = liftIO . runStderrLoggingT $ do
+    let repoID = fromIntegral $ Repo.id repo
+    let action = (selectList [Job.JobRepoID ==. repoID] [])
+    jobs <- runSqlPool action connectionPool
+    let Entity key job = head jobs
+    runSqlPool (delete key) connectionPool
+    return job

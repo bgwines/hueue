@@ -1,7 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Consumer.Merger (merge) where
+module Consumer.Merger () where
 
 import qualified Data.List as L
 import qualified Data.Text as T
@@ -12,7 +12,6 @@ import GHC.Generics
 
 import MonadImports
 
-import qualified QueueStore.Types.Job as Job
 import qualified GithubWebhook.Types.Repo as Repo
 
 import Aliases
@@ -23,35 +22,35 @@ import qualified Utils as U
 
 import qualified System.Directory as D
 
-merge :: Job.Job -> EIO ()
-merge (Job.SafeMergeJob repo srcBranch dstBranch) = liftIO $ do
-    originalDirectory <- D.getCurrentDirectory
+--merge :: Job.Job -> EIO ()
+--merge (Job.SafeMergeJob repo srcBranch dstBranch) = liftIO $ do
+--    originalDirectory <- D.getCurrentDirectory
 
-    putStrLn "Cloning repository..."
-    Git.clone (Repo.cloneUrl repo)
+--    putStrLn "Cloning repository..."
+--    Git.clone (Repo.cloneUrl repo)
 
-    putStrLn "Changing directories..."
-    D.setCurrentDirectory $ T.unpack $ Repo.name repo
+--    putStrLn "Changing directories..."
+--    D.setCurrentDirectory $ T.unpack $ Repo.name repo
 
-    putStrLn "Checking out branch..."
-    Git.checkout srcBranch
+--    putStrLn "Checking out branch..."
+--    Git.checkout srcBranch
 
-    putStrLn "Rebasing..."
-    Git.rebase dstBranch
+--    putStrLn "Rebasing..."
+--    Git.rebase dstBranch
 
-    putStrLn "Forcepushing..."
-    Git.forcePush
+--    putStrLn "Forcepushing..."
+--    Git.forcePush
 
-    -- TODO: wait
+--    -- TODO: wait
 
-    putStrLn "Checking out destination branch..."
-    Git.checkout dstBranch
+--    putStrLn "Checking out destination branch..."
+--    Git.checkout dstBranch
 
-    putStrLn "Merging..."
-    Git.merge srcBranch
+--    putStrLn "Merging..."
+--    Git.merge srcBranch
 
-    putStrLn "Pushing..."
-    Git.push
+--    putStrLn "Pushing..."
+--    Git.push
 
-    putStrLn "Changing directories back..."
-    D.setCurrentDirectory originalDirectory
+--    putStrLn "Changing directories back..."
+--    D.setCurrentDirectory originalDirectory

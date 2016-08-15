@@ -32,13 +32,11 @@ library
                      , GithubWebhook.Types.Events.PushEvent
                      , GithubWebhook.Types.Events.IssueCommentEvent
                      , QueueStore.API
-                     , QueueStore.Store
-                     , QueueStore.Types.Job
-                     , QueueStore.Types.JobQueue
-                     , QueueStore.Constants
                      , Consumer.Merger
                      , Git.API
                      , DataStore
+                     , Job
+                     , Token
   build-depends:       base >= 4.7 && < 5
                      , transformers
                      , aeson
@@ -59,6 +57,7 @@ library
                      , persistent-sqlite
                      , persistent
                      , persistent-template
+                     , monad-logger
   default-language:    Haskell2010
 
 executable webhook
@@ -83,6 +82,7 @@ executable webhook
                      , persistent-sqlite
                      , persistent
                      , persistent-template
+                     , monad-logger
   other-modules:
                        Aliases
                      , GithubWebhook.Constants
@@ -100,12 +100,9 @@ executable webhook
                      , GithubWebhook.Types.SmallUser
                      , MonadImports
                      , QueueStore.API
-                     , QueueStore.Constants
-                     , QueueStore.Store
-                     , QueueStore.Types.Job
-                     , QueueStore.Types.JobQueue
                      , Utils
                      , DataStore
+                     , Job
   default-language:    Haskell2010
 
 executable hueueui
@@ -143,12 +140,10 @@ executable hueueui
                      , GithubWebhook.Types.SmallUser
                      , MonadImports
                      , QueueStore.API
-                     , QueueStore.Constants
-                     , QueueStore.Store
-                     , QueueStore.Types.Job
-                     , QueueStore.Types.JobQueue
                      , Utils
                      , DataStore
+                     , Job
+                     , Token
   default-language:    Haskell2010
 
 test-suite hueue-test

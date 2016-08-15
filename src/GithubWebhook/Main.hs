@@ -24,32 +24,43 @@ import GithubWebhook.Types.Events.IssueCommentEvent
 
 import qualified GithubWebhook.Producer as Producer
 
+import Database.Persist
+import Database.Persist.TH
+import Database.Persist.Sqlite
+import Control.Monad.Logger (runStderrLoggingT)
+
 import qualified Utils as U
 
-main :: IO ()
-main = serve 4567
+import Job
 
-serve :: Int -> IO ()
-serve port = Scotty.scotty port $ do
+main :: IO ()
+main = runStderrLoggingT $ do
+    connectionPool <- createSqlitePool "webhookPool" 10
+    runSqlPool (runMigration migrateAll) connectionPool
+    liftIO $ serve 4567 connectionPool
+
+serve :: Int -> ConnectionPool -> IO ()
+serve port connectionPool = Scotty.scotty port $ do
     Scotty.post "/payload" $ do
-        handleGithubWebrequest <$> Scotty.request <*> Scotty.headers <*> Scotty.body
+        handleGithubWebrequest connectionPool <$> Scotty.request <*> Scotty.headers <*> Scotty.body
             >>= eitherT U.putStrLnIO return
 
     Scotty.notFound $ do
         Scotty.text "There is no such route."
 
 handleGithubWebrequest
-    :: Wai.Request
+    :: ConnectionPool
+    -> Wai.Request
     -> [(TL.Text, TL.Text)]
     -> BSLI.ByteString
     -> EitherT String Scotty.ActionM ()
-handleGithubWebrequest _request headers body = do
+handleGithubWebrequest connectionPool _request headers body = do
     U.putStrLnIO "handling a Github web request!"
     event <- hoistEither $ U.note "Could not extract event from Github POST header" maybeEvent
     case event of
         -- Can't use constants here :/
         -- http://stackoverflow.com/questions/9336385/why-do-these-pattern-matches-overlap
-        "issue_comment" -> (hoistEither . A.eitherDecode $ body) >>= Producer.handleIssueComment
+        "issue_comment" -> (hoistEither . A.eitherDecode $ body) >>= Producer.handleIssueComment connectionPool
         _ -> left $ "Cannot handle Github event " ++ (show event)
     where
         maybeEvent :: Maybe TL.Text

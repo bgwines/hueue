@@ -13,11 +13,13 @@ import Database.Persist.Sqlite
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runStderrLoggingT)
 
-import Token
+import qualified Token
+import qualified Job
 import HueueUI.Types
 
 main :: IO ()
 main = runStderrLoggingT $ do
-    connectionPool <- createSqlitePool "poool" 10
-    runSqlPool (runMigration migrateAll) connectionPool
+    connectionPool <- createSqlitePool "hueueUIPool" 10
+    runSqlPool (runMigration Job.migrateAll) connectionPool
+    runSqlPool (runMigration Token.migrateAll) connectionPool
     liftIO $ warp 3000 (HueueUI connectionPool)

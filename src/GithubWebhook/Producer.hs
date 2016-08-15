@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 module GithubWebhook.Producer
 ( handleIssueComment
 ) where
@@ -19,17 +21,24 @@ import qualified GithubWebhook.Types.Events.IssueCommentEvent as ICEvent
 
 import qualified Utils as U
 
+import qualified Job
+
+import Aliases
+
 import qualified QueueStore.API
-import qualified QueueStore.Types.Job
 
-requestToJob :: RequestParser.ParsedRequest -> Repo.Repo -> QueueStore.Types.Job.Job
+import Database.Persist
+import Database.Persist.TH
+import Database.Persist.Sqlite
+
+requestToJob :: RequestParser.ParsedRequest -> Repo.Repo -> Job.Job
 requestToJob (RequestParser.ParsedRequest _task srcBranch dstBranch) repo
-    = QueueStore.Types.Job.SafeMergeJob repo srcBranch dstBranch
+    = Job.Job (fromIntegral $ Repo.id repo) srcBranch dstBranch
 
-handleIssueComment :: (MonadIO m) => ICEvent.IssueCommentEvent -> EitherT Error m ()
-handleIssueComment event = do
-    liftIO . putStrLn $ "Handling an issue comment!"
+handleIssueComment :: ConnectionPool -> ICEvent.IssueCommentEvent -> EIO ()
+handleIssueComment connectionPool event = do
+    U.putStrLnIO "Handling an issue comment!"
     request <- hoistEither . RequestParser.parse . Comment.body . ICEvent.comment $ event
-    liftIO . print $ request
+    U.printIO request
 
-    QueueStore.API.enqueue $ requestToJob request (ICEvent.repository event)
+    QueueStore.API.enqueue connectionPool $ requestToJob request (ICEvent.repository event)

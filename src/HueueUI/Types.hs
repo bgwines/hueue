@@ -38,8 +38,7 @@ import qualified Network.CGI (formDecode)
 import qualified Network.HTTP.Conduit as HTTP
 
 import qualified Token
-import qualified QueueStore.Store
-import qualified QueueStore.Types.JobQueue
+import qualified Job
 
 import qualified GithubWebhook.Types.BigUser as User
 
@@ -51,7 +50,6 @@ data HueueUI = HueueUI ConnectionPool
 
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
-/clearQueue ClearQueueR GET
 /oauthRedirect OAuthRedirectR GET
 /receiveAccessToken ReceiveAccessTokenR GET
 |]
@@ -69,22 +67,18 @@ getHomeR :: HandlerT HueueUI IO Html
 getHomeR = defaultLayout $ do
     setTitle "Hueue dashboard"
     toWidgetHead [hamlet|<h1>Hueue admin dashboard :o|]
-    equeue <- liftIO . runEitherT $ QueueStore.Store.loadQueueDEBUG 61999075
+    queue <- handlerToWidget . runDB $ selectList [Job.JobRepoID ==. 61999075] []
     mtoken <- handlerToWidget . runDB $ getBy (Token.UniqueUserID 2442246)
     toWidget
         [hamlet|
             <h2>Jobs:
-            $case equeue
-                $of Left msg
-                    <p>Error when loading jobs; failed with error message #{msg}
-                $of Right queue
-                    $if QueueStore.Types.JobQueue.null queue
-                        <p>You don't have any jobs.
-                    $else
-                        <ul>
-                            $forall job <- QueueStore.Types.JobQueue.queue queue
-                                <li>#{show job}
-            <h2>Jobs:
+            $if null queue
+                <p>You don't have any jobs.
+            $else
+                <ul>
+                    $forall job <- queue
+                        <li>#{show job}
+            <h2>Token:
             $case mtoken
                 $of Nothing
                     <p>Error when loading token
@@ -100,19 +94,6 @@ getHomeR = defaultLayout $ do
     toWidget
         [hamlet|
             <p><a href=#{oauthURL}>Give Hueue access
-        |]
-
-getClearQueueR :: HandlerT HueueUI IO Html
-getClearQueueR = defaultLayout $ do
-    clearResult <- liftIO . runEitherT $ QueueStore.Store.clearQueueDEBUG 61999075
-    toWidget
-        [hamlet|
-            <h2>Clearing the repo's jobqueue
-            $case clearResult
-                $of Left msg
-                    <p>Error when clearing queue; failed with error message #{msg}
-                $of Right ()
-                    <p>Cleared successfully!
         |]
 
 getReceiveAccessTokenR :: HandlerT HueueUI IO Html
