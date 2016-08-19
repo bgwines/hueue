@@ -19,7 +19,12 @@ import HueueUI.Types
 
 main :: IO ()
 main = runStderrLoggingT $ do
+    let clientID = "416fdf5ed5fb66f16bd3"
+    let clientSecret = "298f94844d493cc1deccf97ba54a268d1b5690a8"
+    let keys = OAuthKeys clientID clientSecret
+
     connectionPool <- createSqlitePool "commonPool" 10
     runSqlPool (runMigration Job.migrateAll) connectionPool
     runSqlPool (runMigration Token.migrateAll) connectionPool
-    liftIO $ warp 3000 (HueueUI connectionPool)
+
+    liftIO $ warp 3000 (HueueUI connectionPool keys)

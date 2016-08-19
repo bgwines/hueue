@@ -10,6 +10,7 @@
 
 module HueueUI.Types
 ( HueueUI(..)
+, OAuthKeys(..)
 ) where
 
 import Yesod
@@ -46,7 +47,12 @@ import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
 
-data HueueUI = HueueUI ConnectionPool
+data OAuthKeys = OAuthKeys
+    { oauthKeysClientID :: String
+    , oauthKeysClientSecret :: String
+    }
+
+data HueueUI = HueueUI ConnectionPool OAuthKeys
 
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
@@ -60,7 +66,7 @@ instance YesodPersist HueueUI where
 
     runDB :: YesodDB HueueUI a -> HandlerT HueueUI IO a
     runDB action = do
-        HueueUI pool <- getYesod
+        HueueUI pool _ <- getYesod
         runSqlPool action pool
 
 getHomeR :: HandlerT HueueUI IO Html
@@ -85,8 +91,9 @@ getHomeR = defaultLayout $ do
                 $of Just token
                     <p>#{show token}
         |]
+    HueueUI _ keys <- getYesod
     let oauthURL = "https://github.com/login/oauth/authorize"
-            ++ "?client_id="    ++ "416fdf5ed5fb66f16bd3" -- TODO: DB this up
+            ++ "?client_id="    ++ oauthKeysClientID keys
             ++ "&redirect_uri=" ++ "http://52.42.19.45:3000/oauthRedirect" -- TODO: Yesod this up
             ++ "&scope="        ++ "repo"
             ++ "&state="        ++ "142857" -- TODO
@@ -110,15 +117,6 @@ getReceiveAccessTokenR = defaultLayout $ do
             $nothing
                 <h1>Fatal: not given access stoken
             |]
-
-getAccessTokenPOSTParams :: BS.ByteString -> [(BS.ByteString, BS.ByteString)]
-getAccessTokenPOSTParams code =
-    [ ("client_id"    , "416fdf5ed5fb66f16bd3") -- TODO: DB this up
-    , ("client_secret", "298f94844d493cc1deccf97ba54a268d1b5690a8") -- TODO
-    , ("code"         , code)
-    , ("redirect_uri" , "http://52.42.19.45:3000/receiveAccessToken") -- TODO: Yesod this up
-    , ("state"        , "142857") -- TODO (T.showText code)
-    ]
 
 type RequestModifier = HTTP.Request -> HTTP.Request
 
@@ -150,6 +148,7 @@ sendHTTPRequest url params addHeaders specifyMethod
 getOAuthRedirectR :: HandlerT HueueUI IO Html
 getOAuthRedirectR = defaultLayout $ do
     maybeCodeState <- liftA2 (,) <$> lookupGetParam "code" <*> lookupGetParam "state"
+    HueueUI _ keys <- getYesod
     eitherBlockResult <- liftIO . runEitherT $ do
         let extractionErrorMsg = "Fatal: couldn't extract code and state" :: String
         (accessTokenRequestCode, state) <- hoistEither . U.note extractionErrorMsg $ maybeCodeState
@@ -158,7 +157,13 @@ getOAuthRedirectR = defaultLayout $ do
             left "Fatal: security attack detected; aborting authentication"
 
         let url = "https://github.com/login/oauth/access_token"
-        let params = getAccessTokenPOSTParams (C.convert accessTokenRequestCode)
+        let params = [ ("client_id"    , (BSChar8.pack $ oauthKeysClientID keys))
+                     , ("client_secret", (BSChar8.pack $ oauthKeysClientSecret keys))
+                     , ("code"         , (C.convert accessTokenRequestCode))
+                     , ("redirect_uri" , "http://52.42.19.45:3000/receiveAccessToken")
+                     , ("state"        , "142857")
+                     ]
+
         resultBody <- HTTP.responseBody <$> sendHTTPRequest url params id methodPost
         let decodedResultBody = Network.CGI.formDecode . BSChar8.unpack . L.toStrict $ resultBody
         accessToken <- hoistEither . U.note "Fatal: couldn't extract access token" $ snd <$> List.find ((==) "access_token" . fst) decodedResultBody
