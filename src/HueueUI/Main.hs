@@ -13,6 +13,8 @@ import Database.Persist.Sqlite
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runStderrLoggingT)
 
+import Network.HTTP.Client.Conduit (Manager, newManager)
+
 import qualified Token
 import qualified Job
 import HueueUI.Types
@@ -23,8 +25,9 @@ main = runStderrLoggingT $ do
     let clientSecret = "298f94844d493cc1deccf97ba54a268d1b5690a8"
     let keys = OAuthKeys clientID clientSecret
 
+    httpManager <- newManager
+
     connectionPool <- createSqlitePool "commonPool" 10
     runSqlPool (runMigration Job.migrateAll) connectionPool
     runSqlPool (runMigration Token.migrateAll) connectionPool
-
-    liftIO $ warp 3000 (HueueUI connectionPool keys)
+    liftIO $ warp 3000 (HueueUI connectionPool httpManager keys)

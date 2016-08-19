@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 

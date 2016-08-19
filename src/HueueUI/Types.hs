@@ -1,12 +1,14 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE InstanceSigs          #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE TypeSynonymInstances  #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module HueueUI.Types
 ( HueueUI(..)
@@ -41,36 +43,94 @@ import qualified Network.HTTP.Conduit as HTTP
 import qualified Token
 import qualified Job
 
+import Data.Default (def)
+
 import qualified GithubWebhook.Types.BigUser as User
 
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
 
+import Yesod.Auth
+import Yesod.Auth.BrowserId
+import Yesod.Auth.GoogleEmail2
+
+import Data.Data
+import Data.Typeable
+
+import Network.HTTP.Client.Conduit (Manager, newManager)
+
 data OAuthKeys = OAuthKeys
     { oauthKeysClientID :: String
     , oauthKeysClientSecret :: String
     }
 
-data HueueUI = HueueUI ConnectionPool OAuthKeys
+data HueueUI = HueueUI
+    { connectionPool :: ConnectionPool
+    , httpManager :: Manager
+    , oauthKeys :: OAuthKeys
+    } deriving Typeable
 
 mkYesod "HueueUI" [parseRoutes|
 / HomeR GET
 /oauthRedirect OAuthRedirectR GET
 /receiveAccessToken ReceiveAccessTokenR GET
+/auth AuthR Auth getAuth
 |]
-instance Yesod HueueUI
+
+instance Yesod HueueUI where
+    approot = ApprootStatic "http://52.42.19.45:3000"
+
+instance RenderMessage HueueUI FormMessage where
+    renderMessage _ _ = defaultFormMessage
+
+--instance PathPiece (AuthId HueueUI)
 
 instance YesodPersist HueueUI where
     type YesodPersistBackend HueueUI = SqlBackend
 
     runDB :: YesodDB HueueUI a -> HandlerT HueueUI IO a
     runDB action = do
-        HueueUI pool _ <- getYesod
+        HueueUI pool _ _ <- getYesod -- TODO: should authorize here?
         runSqlPool action pool
+
+instance YesodAuth HueueUI where
+    type AuthId HueueUI = T.Text
+
+    getAuthId = return . Just . credsIdent
+
+    loginDest :: YesodAuth HueueUI => HueueUI -> Route HueueUI
+    loginDest _ = HomeR
+
+    logoutDest :: YesodAuth HueueUI => HueueUI -> Route HueueUI
+    logoutDest _ = HomeR
+
+    authPlugins :: YesodAuth HueueUI => HueueUI -> [AuthPlugin HueueUI]
+    authPlugins foundation =
+        [ authBrowserId def
+        , authGoogleEmail clientId clientSecret
+        ]
+        where
+            clientId :: T.Text
+            clientId = C.convert $ oauthKeysClientID keys
+
+            clientSecret :: T.Text
+            clientSecret = C.convert $ oauthKeysClientSecret keys
+
+            keys :: OAuthKeys
+            keys = oauthKeys foundation
+
+    authHttpManager :: YesodAuth HueueUI => HueueUI -> Manager
+    authHttpManager = httpManager
+
+    maybeAuthId :: HandlerT HueueUI IO (Maybe (AuthId HueueUI))
+    maybeAuthId = return Nothing
+
+--instance Typeable (AuthEntity HueueUI)
 
 getHomeR :: HandlerT HueueUI IO Html
 getHomeR = defaultLayout $ do
+    maid <- handlerToWidget maybeAuthId
     setTitle "Hueue dashboard"
     toWidgetHead [hamlet|<h1>Hueue admin dashboard :o|]
     queue <- handlerToWidget . runDB $ selectList [Job.JobRepoID ==. 61999075] []
@@ -90,14 +150,20 @@ getHomeR = defaultLayout $ do
                     <p>Error when loading token
                 $of Just token
                     <p>#{show token}
+            <h2>Auth ID:
+            $case maid
+                $of Nothing
+                    <p>no auth id :(
+                $of Just authID
+                    <p>#{show authID}
         |]
-    HueueUI _ keys <- getYesod
+    HueueUI _ _ keys <- getYesod
     let oauthURL = "https://github.com/login/oauth/authorize"
-            ++ "?client_id="    ++ oauthKeysClientID keys
-            ++ "&redirect_uri=" ++ "http://52.42.19.45:3000/oauthRedirect" -- TODO: Yesod this up
-            ++ "&scope="        ++ "repo"
-            ++ "&state="        ++ "142857" -- TODO
-            ++ "&allow_signup=" ++ "true" :: String
+                    ++ "?client_id="    ++ oauthKeysClientID keys
+                    ++ "&redirect_uri=" ++ "http://52.42.19.45:3000/oauthRedirect" -- TODO: Yesod this up
+                    ++ "&scope="        ++ "repo"
+                    ++ "&state="        ++ "142857" -- TODO
+                    ++ "&allow_signup=" ++ "true" :: String
     toWidget
         [hamlet|
             <p><a href=#{oauthURL}>Give Hueue access
@@ -148,7 +214,7 @@ sendHTTPRequest url params addHeaders specifyMethod
 getOAuthRedirectR :: HandlerT HueueUI IO Html
 getOAuthRedirectR = defaultLayout $ do
     maybeCodeState <- liftA2 (,) <$> lookupGetParam "code" <*> lookupGetParam "state"
-    HueueUI _ keys <- getYesod
+    HueueUI _ _ keys <- getYesod
     eitherBlockResult <- liftIO . runEitherT $ do
         let extractionErrorMsg = "Fatal: couldn't extract code and state" :: String
         (accessTokenRequestCode, state) <- hoistEither . U.note extractionErrorMsg $ maybeCodeState

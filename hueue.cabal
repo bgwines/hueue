@@ -132,6 +132,7 @@ executable hueueui
                      , persistent-template
                      , resourcet
                      , monad-logger
+                     , yesod-auth
   other-modules:
                        Aliases
                      , HueueUI.Types
