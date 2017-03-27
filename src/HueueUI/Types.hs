@@ -68,7 +68,8 @@ data OAuthKeys = OAuthKeys
 data HueueUI = HueueUI
     { connectionPool :: ConnectionPool
     , httpManager :: Manager
-    , oauthKeys :: OAuthKeys
+    , githubOAuthKeys :: OAuthKeys -- for access to the Github API
+    , googleOAuthKeys :: OAuthKeys -- for user authentication
     } deriving Typeable
 
 mkYesod "HueueUI" [parseRoutes|
@@ -79,24 +80,23 @@ mkYesod "HueueUI" [parseRoutes|
 |]
 
 instance Yesod HueueUI where
-    approot = ApprootStatic "http://52.42.19.45:3000"
+    approot = ApprootStatic "http://34.208.168.142:3000"
 
 instance RenderMessage HueueUI FormMessage where
     renderMessage _ _ = defaultFormMessage
-
---instance PathPiece (AuthId HueueUI)
 
 instance YesodPersist HueueUI where
     type YesodPersistBackend HueueUI = SqlBackend
 
     runDB :: YesodDB HueueUI a -> HandlerT HueueUI IO a
     runDB action = do
-        HueueUI pool _ _ <- getYesod -- TODO: should authorize here?
+        HueueUI pool _ _ _ <- getYesod -- TODO: should authorize here?
         runSqlPool action pool
 
 instance YesodAuth HueueUI where
     type AuthId HueueUI = T.Text
 
+    getAuthId :: Creds HueueUI -> HandlerT HueueUI IO (Maybe T.Text)
     getAuthId = return . Just . credsIdent
 
     loginDest :: YesodAuth HueueUI => HueueUI -> Route HueueUI
@@ -118,7 +118,7 @@ instance YesodAuth HueueUI where
             clientSecret = C.convert $ oauthKeysClientSecret keys
 
             keys :: OAuthKeys
-            keys = oauthKeys foundation
+            keys = githubOAuthKeys foundation
 
     authHttpManager :: YesodAuth HueueUI => HueueUI -> Manager
     authHttpManager = httpManager
@@ -150,23 +150,28 @@ getHomeR = defaultLayout $ do
                     <p>Error when loading token
                 $of Just token
                     <p>#{show token}
-            <h2>Auth ID:
-            $case maid
-                $of Nothing
-                    <p>no auth id :(
-                $of Just authID
-                    <p>#{show authID}
         |]
-    HueueUI _ _ keys <- getYesod
+    HueueUI _ _ githubKeys _ <- getYesod
     let oauthURL = "https://github.com/login/oauth/authorize"
-                    ++ "?client_id="    ++ oauthKeysClientID keys
-                    ++ "&redirect_uri=" ++ "http://52.42.19.45:3000/oauthRedirect" -- TODO: Yesod this up
+                    ++ "?client_id="    ++ oauthKeysClientID githubKeys
+                    ++ "&redirect_uri=" ++ "http://34.208.168.142:3000/oauthRedirect" -- TODO: Yesod this up
                     ++ "&scope="        ++ "repo"
                     ++ "&state="        ++ "142857" -- TODO
                     ++ "&allow_signup=" ++ "true" :: String
     toWidget
         [hamlet|
             <p><a href=#{oauthURL}>Give Hueue access
+        |]
+
+    toWidget
+        [whamlet|
+            <p>Your current auth ID: #{show maid}
+            $maybe _ <- maid
+                <p>
+                    <a href=@{AuthR LogoutR}>Logout
+            $nothing
+                <p>
+                    <a href=@{AuthR LoginR}>Go to the login page
         |]
 
 getReceiveAccessTokenR :: HandlerT HueueUI IO Html
@@ -214,7 +219,7 @@ sendHTTPRequest url params addHeaders specifyMethod
 getOAuthRedirectR :: HandlerT HueueUI IO Html
 getOAuthRedirectR = defaultLayout $ do
     maybeCodeState <- liftA2 (,) <$> lookupGetParam "code" <*> lookupGetParam "state"
-    HueueUI _ _ keys <- getYesod
+    HueueUI _ _ githubKeys _ <- getYesod
     eitherBlockResult <- liftIO . runEitherT $ do
         let extractionErrorMsg = "Fatal: couldn't extract code and state" :: String
         (accessTokenRequestCode, state) <- hoistEither . U.note extractionErrorMsg $ maybeCodeState
@@ -223,10 +228,10 @@ getOAuthRedirectR = defaultLayout $ do
             left "Fatal: security attack detected; aborting authentication"
 
         let url = "https://github.com/login/oauth/access_token"
-        let params = [ ("client_id"    , (BSChar8.pack $ oauthKeysClientID keys))
-                     , ("client_secret", (BSChar8.pack $ oauthKeysClientSecret keys))
+        let params = [ ("client_id"    , (BSChar8.pack $ oauthKeysClientID githubKeys))
+                     , ("client_secret", (BSChar8.pack $ oauthKeysClientSecret githubKeys))
                      , ("code"         , (C.convert accessTokenRequestCode))
-                     , ("redirect_uri" , "http://52.42.19.45:3000/receiveAccessToken")
+                     , ("redirect_uri" , "http://34.208.168.142:3000/receiveAccessToken")
                      , ("state"        , "142857")
                      ]
 
