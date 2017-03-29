@@ -15,146 +15,33 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src, lib
-  exposed-modules:     Utils
-                     , Aliases
-                     , MonadImports
-                     , GithubWebhook.Producer
-                     , GithubWebhook.Constants
-                     , GithubWebhook.RequestParser
-                     , GithubWebhook.Types.Error
-                     , GithubWebhook.Types.Repo
-                     , GithubWebhook.Types.Issue
-                     , GithubWebhook.Types.Commit
-                     , GithubWebhook.Types.Comment
-                     , GithubWebhook.Types.BigUser
-                     , GithubWebhook.Types.SmallUser
-                     , GithubWebhook.Types.PullRequest
-                     , GithubWebhook.Types.Events.PushEvent
-                     , GithubWebhook.Types.Events.IssueCommentEvent
-                     , QueueStore.API
-                     , Consumer.Merger
-                     , Git.API
-                     , DataStore
-                     , Job
-                     , Token
-  build-depends:       base >= 4.7 && < 5
-                     , transformers
-                     , aeson
-                     , text
-                     , bytestring
-                     , either
-                     , data-default
-                     , leveldb-haskell
-                     , cereal
-                     , cereal-text
-                     , scotty
-                     , wai
-                     , parsec
-                     , cond
-                     , yesod
-                     , shelly
-                     , directory
-                     , persistent-sqlite
-                     , persistent
-                     , persistent-template
-                     , monad-logger
+  exposed-modules:     Utils, Aliases, MonadImports, GithubWebhook.Producer, GithubWebhook.Constants, GithubWebhook.RequestParser, GithubWebhook.Types.Error, GithubWebhook.Types.Repo, GithubWebhook.Types.Issue, GithubWebhook.Types.Commit, GithubWebhook.Types.Comment, GithubWebhook.Types.BigUser, GithubWebhook.Types.SmallUser, GithubWebhook.Types.PullRequest, GithubWebhook.Types.Events.PushEvent, GithubWebhook.Types.Events.IssueCommentEvent, QueueStore.API, Consumer.Merger, Git.API, DataStore, Job, Token
+  build-depends:       base >= 4.7 && < 5, transformers, aeson, text, bytestring, either, data-default, leveldb-haskell, cereal, cereal-text, scotty, wai, parsec, cond, yesod, shelly, directory, persistent-sqlite, persistent, persistent-template, monad-logger
   default-language:    Haskell2010
 
 executable webhook
   hs-source-dirs:      src, lib
   main-is:             GithubWebhook/Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , scotty
-                     , transformers
-                     , text
-                     , bytestring
-                     , wai
-                     , aeson
-                     , leveldb-haskell
-                     , data-default
-                     , cereal
-                     , cereal-text
-                     , parsec
-                     , cond
-                     , either
-                     , persistent-sqlite
-                     , persistent-sqlite
-                     , persistent
-                     , persistent-template
-                     , monad-logger
+  build-depends:       base, scotty, transformers, text, bytestring, wai, aeson, leveldb-haskell, data-default, cereal, cereal-text, parsec, cond, either, persistent-sqlite, persistent-sqlite, persistent, persistent-template, monad-logger
   other-modules:
-                       Aliases
-                     , GithubWebhook.Constants
-                     , GithubWebhook.Producer
-                     , GithubWebhook.RequestParser
-                     , GithubWebhook.Types.BigUser
-                     , GithubWebhook.Types.Comment
-                     , GithubWebhook.Types.Commit
-                     , GithubWebhook.Types.Error
-                     , GithubWebhook.Types.Events.IssueCommentEvent
-                     , GithubWebhook.Types.Events.PushEvent
-                     , GithubWebhook.Types.Issue
-                     , GithubWebhook.Types.PullRequest
-                     , GithubWebhook.Types.Repo
-                     , GithubWebhook.Types.SmallUser
-                     , MonadImports
-                     , QueueStore.API
-                     , Utils
-                     , DataStore
-                     , Job
+                       Aliases, GithubWebhook.Constants, GithubWebhook.Producer, GithubWebhook.RequestParser, GithubWebhook.Types.BigUser, GithubWebhook.Types.Comment, GithubWebhook.Types.Commit, GithubWebhook.Types.Error, GithubWebhook.Types.Events.IssueCommentEvent, GithubWebhook.Types.Events.PushEvent, GithubWebhook.Types.Issue, GithubWebhook.Types.PullRequest, GithubWebhook.Types.Repo, GithubWebhook.Types.SmallUser, MonadImports, QueueStore.API, Utils, DataStore, Job
   default-language:    Haskell2010
 
 executable hueueui
   hs-source-dirs:      src, lib
   main-is:             HueueUI/Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , scotty
-                     , aeson
-                     , yesod
-                     , transformers
-                     , text
-                     , bytestring
-                     , wai
-                     , leveldb-haskell
-                     , data-default
-                     , cereal
-                     , cereal-text
-                     , cond
-                     , either
-                     , http-conduit
-                     , network
-                     , cgi
-                     , convertible
-                     , persistent-sqlite
-                     , persistent
-                     , persistent-template
-                     , resourcet
-                     , monad-logger
-                     , yesod-auth
+  build-depends:       base, scotty, aeson, transformers, text, bytestring, wai, leveldb-haskell, data-default, cereal, cereal-text, cond, either, http-conduit, network, cgi, convertible, persistent-sqlite, persistent, persistent-template, resourcet, monad-logger, yesod-auth
   other-modules:
-                       Aliases
-                     , HueueUI.Types
-                     , GithubWebhook.Types.BigUser
-                     , GithubWebhook.Types.Repo
-                     , GithubWebhook.Types.SmallUser
-                     , MonadImports
-                     , QueueStore.API
-                     , Utils
-                     , DataStore
-                     , Job
-                     , Token
+                       Aliases, GithubWebhook.Types.BigUser, GithubWebhook.Types.Repo, GithubWebhook.Types.SmallUser, MonadImports, QueueStore.API, Utils, DataStore, Job, Token
   default-language:    Haskell2010
 
 test-suite hueue-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       base
-                     , hueue
-                     , tasty-hunit
-                     , tasty
+  build-depends:       base, hueue, tasty-hunit, tasty
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

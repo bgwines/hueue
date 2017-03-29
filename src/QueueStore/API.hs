@@ -11,6 +11,7 @@
 module QueueStore.API
 ( enqueue
 , dequeue
+, dequeueAll
 ) where
 
 import qualified Data.Default as Default
@@ -41,6 +42,14 @@ dequeue connectionPool repo = liftIO . runStderrLoggingT $ do
     let repoID = fromIntegral $ Repo.id repo
     let action = (selectList [Job.JobRepoID ==. repoID] [])
     jobs <- runSqlPool action connectionPool
-    let Entity key job = head jobs --- TODO: null check
+    when (null jobs) $ fail "No jobs to dequeue"
+    let Entity key job = head jobs
     runSqlPool (delete key) connectionPool
     return job
+
+dequeueAll :: ConnectionPool -> Int -> EIO [Job.Job]
+dequeueAll connectionPool repoID = liftIO . runStderrLoggingT $ do
+    let action = (selectList [Job.JobRepoID ==. repoID] [])
+    jobs <- runSqlPool action connectionPool
+    mapM (\(Entity key job) -> runSqlPool (delete key) connectionPool) jobs
+    return $ map (\(Entity key job) -> job) jobs

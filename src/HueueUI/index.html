@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+    <title>
+      Hueue Console
+    </title>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  </head>
+  <h1>Hueue dashboard :o</h1>
+  <br><br>
+
+  Jobs:
+  <br>
+  <div id="jobs">
+  </div>
+  <br><br>
+
+  <a href="">Give Hueue access</a>
+  <br><br>
+
+  <a href="">Dequeue all jobs :o</a>
+  <br><br>
+
+  <a href="">Go to the login page</a>
+</html>
+
+<script type="text/javascript">
+    $.getJSON('get_jobs', function (jobs) {
+        var content = "<table>"
+        for (i = 0; i < jobs.length; i++){
+            content += '<tr><td>' + jobs[i] + '</td></tr>';
+        }
+        content += "</table>"
+        $('#jobs').append(content);
+    });
+</script>

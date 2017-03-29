@@ -3,36 +3,48 @@
 
 module Main (main) where
 
-import Yesod
-
-import Database.Persist
+import Database.Persist hiding (get)
 import Database.Persist.TH
-import Database.Persist.Sqlite
+import Database.Persist.Sqlite hiding (get)
 
-import Database.Persist.Sqlite
-import Control.Monad.Trans.Resource (runResourceT)
+import Control.Monad.Trans.Reader
+
+import Control.Monad.IO.Class
 import Control.Monad.Logger (runStderrLoggingT)
 
-import Network.HTTP.Client.Conduit (Manager, newManager)
+import qualified Data.Text.Lazy as T
 
 import qualified Token
 import qualified Job
-import HueueUI.Types
 
-main :: IO ()
-main = runStderrLoggingT $ do
+import Web.Scotty
+import Data.Monoid (mconcat)
+
+{-
     let githubClientID = "416fdf5ed5fb66f16bd3"
     let githubClientSecret = "298f94844d493cc1deccf97ba54a268d1b5690a8"
-    let githubKeys = OAuthKeys githubClientID githubClientSecret
-
-    -- TODO: get these
-    let googleClientID = ""
-    let googleClientSecret = ""
-    let googleKeys = OAuthKeys googleClientID googleClientSecret
-
+    let url = "http://34.208.168.142:3000"
+-}
+-- TODO: share with other `main`
+main :: IO ()
+main = runStderrLoggingT $ do
     connectionPool <- createSqlitePool "commonPool" 10
-    runSqlPool (runMigration Job.migrateAll) connectionPool
-    runSqlPool (runMigration Token.migrateAll) connectionPool
+    runSqlPool (runMigration Job.migrateAll >> runMigration Token.migrateAll) connectionPool
+    liftIO $ serve 3000 connectionPool
 
-    httpManager <- newManager
-    liftIO $ warp 3000 (HueueUI connectionPool httpManager githubKeys googleKeys)
+serve :: Int -> ConnectionPool -> IO ()
+serve port connectionPool = scotty port $ do
+    get "/" $ do
+        liftIO (T.pack <$> readFile "src/HueueUI/index.html") >>= html
+
+    get "/get_jobs" $ do
+        let action = selectList [Job.JobRepoID ==. 61999075] []
+        jobs <- runSqlPool action connectionPool
+        json $ map show jobs
+
+    get "/:word" $ do
+        beam <- param "word"
+        html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
+
+    notFound $ do
+         text "there is no such route."
