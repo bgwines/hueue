@@ -1,3 +1,4 @@
+<!DOCTYPE HTML>
 <html>
   <head>
     <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
@@ -27,8 +28,17 @@
 <script type="text/javascript">
     $.getJSON('get_jobs', function (jobs) {
         var content = "<table>"
+        content += '<tr>'
+          + '<td><bold>srcBranch</bold></td>'
+          + '<td><bold>dstBranch</bold></td>'
+          + '<td><bold>repoID</bold></td>'
+        '</tr>';
         for (i = 0; i < jobs.length; i++){
-            content += '<tr><td>' + jobs[i] + '</td></tr>';
+            content += '<tr>'
+              + '<td>' + jobs[i].srcBranch + '</td>'
+              + '<td>' + jobs[i].dstBranch + '</td>'
+              + '<td>' + jobs[i].repoID + '</td>'
+            '</tr>';
         }
         content += "</table>"
         $('#jobs').append(content);
