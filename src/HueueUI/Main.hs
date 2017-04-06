@@ -39,7 +39,7 @@ serve port connectionPool = scotty port $ do
 
     get "/get_jobs" $ do
         let action = selectList [Job.JobRepoID ==. 61999075] []
-        jobs <- runSqlPool action connectionPool
+        jobs <- map entityVal <$> runSqlPool action connectionPool
         json $ map show jobs
 
     get "/:word" $ do

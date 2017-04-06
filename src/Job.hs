@@ -21,5 +21,8 @@ Job
     repoID Int
     srcBranch T.Text
     dstBranch T.Text
-    deriving Show
 |]
+
+instance Show Job where
+    show (Job repoID srcBranch dstBranch) = "Job " ++ T.unpack srcBranch ++ T.unpack dstBranch ++
+        " (repo " ++ show repoID ++ ")"
