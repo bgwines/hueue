@@ -10,6 +10,9 @@
 
 module Job where
 
+import Data.Aeson
+import GHC.Generics
+
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
@@ -21,8 +24,10 @@ Job
     repoID Int
     srcBranch T.Text
     dstBranch T.Text
+    deriving Generic
 |]
 
-instance Show Job where
-    show (Job repoID srcBranch dstBranch) = "Job " ++ T.unpack srcBranch ++ T.unpack dstBranch ++
-        " (repo " ++ show repoID ++ ")"
+instance ToJSON Job where
+    toJSON (Job repoID srcBranch dstBranch) =
+        object ["repoID" .= repoID, "srcBranch" .= srcBranch, "dstBranch" .= dstBranch]
+

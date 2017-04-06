@@ -17,6 +17,8 @@ import qualified Data.Text.Lazy as T
 import qualified Token
 import qualified Job
 
+import Data.Aeson (toJSON)
+
 import Web.Scotty
 import Data.Monoid (mconcat)
 
@@ -39,8 +41,7 @@ serve port connectionPool = scotty port $ do
 
     get "/get_jobs" $ do
         let action = selectList [Job.JobRepoID ==. 61999075] []
-        jobs <- map entityVal <$> runSqlPool action connectionPool
-        json $ map show jobs
+        json =<< map (toJSON . entityVal) <$> runSqlPool action connectionPool
 
     get "/:word" $ do
         beam <- param "word"
