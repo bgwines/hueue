@@ -40,7 +40,7 @@ enqueue connectionPool job = liftIO . runStderrLoggingT $ do
 dequeue :: ConnectionPool -> Repo.Repo -> EIO Job.Job
 dequeue connectionPool repo = liftIO . runStderrLoggingT $ do
     let repoID = fromIntegral $ Repo.id repo
-    let action = (selectList [Job.JobRepoID ==. repoID] [])
+    let action = selectList [Job.JobRepoID ==. repoID] []
     jobs <- runSqlPool action connectionPool
     when (null jobs) $ fail "No jobs to dequeue"
     let Entity key job = head jobs
@@ -49,7 +49,7 @@ dequeue connectionPool repo = liftIO . runStderrLoggingT $ do
 
 dequeueAll :: ConnectionPool -> Int -> EIO [Job.Job]
 dequeueAll connectionPool repoID = liftIO . runStderrLoggingT $ do
-    let action = (selectList [Job.JobRepoID ==. repoID] [])
+    let action = selectList [Job.JobRepoID ==. repoID] []
     jobs <- runSqlPool action connectionPool
     mapM (\(Entity key job) -> runSqlPool (delete key) connectionPool) jobs
     return $ map (\(Entity key job) -> job) jobs

@@ -60,7 +60,8 @@ handleGithubWebrequest connectionPool _request headers body = do
     case event of
         -- Can't use constants here :/
         -- http://stackoverflow.com/questions/9336385/why-do-these-pattern-matches-overlap
-        "issue_comment" -> (hoistEither . A.eitherDecode $ body) >>= Producer.handleIssueComment connectionPool
+        "issue_comment" -> (hoistEither . A.eitherDecode $ body)
+            >>= Producer.handleIssueComment connectionPool
         _ -> left $ "Cannot handle Github event " ++ (show event)
     where
         maybeEvent :: Maybe TL.Text

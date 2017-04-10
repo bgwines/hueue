@@ -8,10 +8,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module RepoStore
-( loadByGithubUserID
-, RepoStore.insert
-, RepoStore.convert
+module JobStore
+( loadByRepoID
+, JobStore.insert
 ) where
 
 import qualified Data.Default as Default
@@ -23,7 +22,7 @@ import Aliases
 
 import Data.Maybe
 
-import qualified Repo
+import qualified Job
 import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.Repo as WebhookRepo
 
@@ -36,15 +35,12 @@ import Database.Persist.TH
 import Database.Persist.Sqlite
 import Control.Monad.Logger (runStderrLoggingT)
 
-loadByGithubUserID :: ConnectionPool -> Int -> EIO [Repo.Repo]
-loadByGithubUserID connectionPool githubUserID = liftIO . runStderrLoggingT $ do
-    let action = selectList [Repo.RepoMergerGithubUserID ==. githubUserID] []
-    map (\(Entity key repo) -> repo) <$> runSqlPool action connectionPool
+loadByRepoID :: ConnectionPool -> Int -> EIO [Job.Job]
+loadByRepoID connectionPool repoID = liftIO . runStderrLoggingT $ do
+    let action = selectList [Job.JobRepoID ==. repoID] []
+    map (\(Entity key job) -> job) <$> runSqlPool action connectionPool
 
 -- dupes?
-insert :: ConnectionPool -> Repo.Repo -> EIO ()
-insert connectionPool repo = liftIO . runStderrLoggingT $ do
-    void $ runSqlPool (Database.Persist.Sqlite.insert repo) connectionPool
-
-convert :: WebhookRepo.Repo -> Int -> Repo.Repo
-convert webhookRepo userID = Repo.Repo (fromInteger $ WebhookRepo.id webhookRepo) userID
+insert :: ConnectionPool -> Job.Job -> EIO ()
+insert connectionPool job = liftIO . runStderrLoggingT $ do
+    void $ runSqlPool (Database.Persist.Sqlite.insert job) connectionPool
