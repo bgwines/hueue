@@ -8,29 +8,23 @@ import Data.Either
 import qualified GithubWebhook.RequestParser as RP
 
 testCommentParsingSuccess :: Assertion
-testCommentParsingSuccess = do
-    RP.parse "hueue merge a b" @?= Right (RP.ParsedRequest "merge" "a" "b")
+testCommentParsingSuccess = RP.parse "hueue merge a b" @?= Right (RP.ParsedRequest "merge" "a" "b")
 
 testCommentParsingFailure1 :: Assertion
-testCommentParsingFailure1 = do
-    assertBool "Should fail" (isLeft $ RP.parse "nothueue merge a b")
+testCommentParsingFailure1 = assertBool "Should fail" (isLeft $ RP.parse "nothueue merge a b")
 
 testCommentParsingFailure2 :: Assertion
-testCommentParsingFailure2 = do
-    assertBool "Should fail" (isLeft $ RP.parse "hueue merge a")
+testCommentParsingFailure2 = assertBool "Should fail" (isLeft $ RP.parse "hueue merge a")
 
 -- currently fails
 testCommentParsingFailure3 :: Assertion
-testCommentParsingFailure3 = do
-    assertBool "Should fail" (isLeft $ RP.parse "hueue merge a b c")
+testCommentParsingFailure3 = assertBool "Should fail" (isLeft $ RP.parse "hueue merge a b c")
 
 testCommentParsingFailure4 :: Assertion
-testCommentParsingFailure4 = do
-    assertBool "Should fail" (isLeft $ RP.parse "hueue merge")
+testCommentParsingFailure4 = assertBool "Should fail" (isLeft $ RP.parse "hueue merge")
 
 testCommentParsingFailure5 :: Assertion
-testCommentParsingFailure5 = do
-    assertBool "Should fail" (isLeft $ RP.parse "hueue")
+testCommentParsingFailure5 = assertBool "Should fail" (isLeft $ RP.parse "hueue")
 
 -- TODO: replaceFirst
 -- TODO: trimming

@@ -27,7 +27,7 @@ requestParser :: Parser ParsedRequest
 requestParser = do
     hueue <- token
     if hueue /= "hueue"
-        then (fail "Parsing failed")
+        then fail "Parsing failed"
         else ParsedRequest <$> token <*> token <*> token
     where
         token :: Parser T.Text

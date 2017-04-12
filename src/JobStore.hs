@@ -1,8 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -42,5 +40,5 @@ loadByRepoID connectionPool repoID = liftIO . runStderrLoggingT $ do
 
 -- dupes?
 insert :: ConnectionPool -> Job.Job -> EIO ()
-insert connectionPool job = liftIO . runStderrLoggingT $ do
+insert connectionPool job = liftIO . runStderrLoggingT $
     void $ runSqlPool (Database.Persist.Sqlite.insert job) connectionPool

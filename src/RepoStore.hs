@@ -1,8 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -43,8 +41,8 @@ loadByGithubUserID connectionPool githubUserID = liftIO . runStderrLoggingT $ do
 
 -- dupes?
 insert :: ConnectionPool -> Repo.Repo -> EIO ()
-insert connectionPool repo = liftIO . runStderrLoggingT $ do
+insert connectionPool repo = liftIO . runStderrLoggingT $
     void $ runSqlPool (Database.Persist.Sqlite.insert repo) connectionPool
 
 convert :: WebhookRepo.Repo -> Int -> Repo.Repo
-convert webhookRepo userID = Repo.Repo (fromInteger $ WebhookRepo.id webhookRepo) userID
+convert webhookRepo = Repo.Repo (fromInteger . WebhookRepo.id $ webhookRepo)

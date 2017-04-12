@@ -46,8 +46,7 @@ main = runStderrLoggingT $ do
 
 serve :: Int -> ConnectionPool -> IO ()
 serve port connectionPool = scotty port $ do
-    get "/" $ do
-        liftIO (T.pack <$> readFile "src/HueueUI/index.html") >>= html
+    get "/" $ liftIO (T.pack <$> readFile "src/HueueUI/index.html") >>= html
 
     get "/get_jobs" $ do
         eitherJobs <- runEitherT $ do
@@ -63,5 +62,4 @@ serve port connectionPool = scotty port $ do
         beam <- param "word"
         html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
 
-    notFound $ do
-         text "there is no such route."
+    notFound $ text "there is no such route."

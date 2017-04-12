@@ -20,8 +20,8 @@ import Aliases
 import qualified Utils as U
 
 load :: BS.ByteString -> FilePath -> EIO BS.ByteString
-load key dbPath = do
-    (hoistEither . U.note errorMessage) =<< (liftIO $ do
+load key dbPath =
+    (hoistEither . U.note errorMessage) =<< liftIO (do
         db <- DB.open dbPath (DB.defaultOptions{ DB.createIfMissing = True })
         maybeValue <- DB.get db Default.def key
         DBInternal.unsafeClose db

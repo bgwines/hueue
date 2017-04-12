@@ -41,12 +41,11 @@ main = runStderrLoggingT $ do
 
 serve :: Int -> ConnectionPool -> IO ()
 serve port connectionPool = Scotty.scotty port $ do
-    Scotty.post "/payload" $ do
+    Scotty.post "/payload" $
         handleGithubWebrequest connectionPool <$> Scotty.request <*> Scotty.headers <*> Scotty.body
             >>= eitherT U.putStrLnIO return
 
-    Scotty.notFound $ do
-        Scotty.text "There is no such route."
+    Scotty.notFound $ Scotty.text "There is no such route."
 
 handleGithubWebrequest
     :: ConnectionPool
@@ -62,7 +61,7 @@ handleGithubWebrequest connectionPool _request headers body = do
         -- http://stackoverflow.com/questions/9336385/why-do-these-pattern-matches-overlap
         "issue_comment" -> (hoistEither . A.eitherDecode $ body)
             >>= Producer.handleIssueComment connectionPool
-        _ -> left $ "Cannot handle Github event " ++ (show event)
+        _ -> left $ "Cannot handle Github event " ++ show event
     where
         maybeEvent :: Maybe TL.Text
         maybeEvent = fmap snd . L.find ((==) githubEvent . fst) $ headers

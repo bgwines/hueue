@@ -28,7 +28,7 @@ data PushEvent = PushEvent
     , baseRef :: Maybe T.Text
     , compare :: T.Text
     , commits :: [C.Commit]
-    , head_commit :: C.Commit
+    , headCommit :: C.Commit
     , repository :: R.Repo
     , pusher :: SmallUser.SmallUser
     , sender :: BigUser.BigUser } deriving (Eq, Generic, Show)

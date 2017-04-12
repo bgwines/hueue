@@ -44,6 +44,6 @@ handleIssueComment connectionPool event = do
     request <- hoistEither . RequestParser.parse . Comment.body . ICEvent.comment $ event
     U.printIO request
     let userID = fromIntegral . BigUser.id . Comment.user . ICEvent.comment $ event
-    let repo = (ICEvent.repository event)
+    let repo = ICEvent.repository event
     RepoStore.insert connectionPool $ RepoStore.convert repo userID
     QueueStore.API.enqueue connectionPool $ requestToJob request repo
