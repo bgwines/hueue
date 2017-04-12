@@ -41,8 +41,15 @@ loadByGithubUserID connectionPool githubUserID = liftIO . runStderrLoggingT $ do
 
 -- dupes?
 insert :: ConnectionPool -> Repo.Repo -> EIO ()
-insert connectionPool repo = liftIO . runStderrLoggingT $
-    void $ runSqlPool (Database.Persist.Sqlite.insert repo) connectionPool
+insert connectionPool repo@(Repo.Repo repoID githubUserID) = liftIO . runStderrLoggingT $ do
+    let filters = [FilterAnd [Repo.RepoMergerGithubUserID ==. githubUserID, Repo.RepoRepoID ==. repoID]]
+    let action = selectList filters []
+    numRepos <- length <$> runSqlPool action connectionPool
+    U.printIO "numRepos"
+    U.printIO numRepos
+    unless (numRepos > 0) $ do
+        U.printIO "inserting"
+        void $ runSqlPool (Database.Persist.Sqlite.insert repo) connectionPool
 
 convert :: WebhookRepo.Repo -> Int -> Repo.Repo
 convert webhookRepo = Repo.Repo (fromInteger . WebhookRepo.id $ webhookRepo)

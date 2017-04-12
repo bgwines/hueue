@@ -10,6 +10,9 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.ByteString.Lazy.Internal as BSLI
 
+import qualified Job
+import qualified Repo
+
 import GHC.Generics
 
 import MonadImports
@@ -36,7 +39,9 @@ import Job
 main :: IO ()
 main = runStderrLoggingT $ do
     connectionPool <- createSqlitePool "commonPool" 10
-    runSqlPool (runMigration migrateAll) connectionPool
+    runSqlPool
+        (  runMigration Job.migrateAll
+        >> runMigration Repo.migrateAll ) connectionPool
     liftIO $ serve 4567 connectionPool
 
 serve :: Int -> ConnectionPool -> IO ()

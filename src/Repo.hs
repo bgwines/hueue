@@ -20,4 +20,5 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Repo
     repoID Int
     mergerGithubUserID Int
+    deriving Show
 |]
