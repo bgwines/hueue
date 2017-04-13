@@ -16,7 +16,8 @@
   </div>
   <br><br>
 
-  <a href="">Give Hueue access</a>
+  <div id="oauthLogin">
+  </div>
   <br><br>
 
   <a href="">Dequeue all jobs :o</a>
@@ -43,4 +44,18 @@
         content += "</table>"
         $('#jobs').append(content);
     });
+
+    getOauthURL = function() {
+      var url = "http://34.208.168.142:3000";
+      var githubClientID = "416fdf5ed5fb66f16bd3";
+      var oauthURL = "https://github.com/login/oauth/authorize"
+                      + "?client_id="    + githubClientID
+                      + "&redirect_uri=" + url + "/oauthRedirect"
+                      + "&scope="        + "repo"
+                      + "&state="        + "142857"
+                      + "&allow_signup=" + "true";
+      return oauthURL;
+    }
+
+    $('#oauthLogin').append("<a href=" + getOauthURL() + ">Give Hueue access</a>");
 </script>
