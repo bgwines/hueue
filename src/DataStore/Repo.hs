@@ -15,6 +15,7 @@ import qualified Data.Text as T
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Repo
     repoID Int
+    name T.Text
     mergerGithubUserID Int
     deriving Show
 |]

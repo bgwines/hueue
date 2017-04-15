@@ -15,7 +15,7 @@ import qualified Executor
 import qualified Utils
 
 loadByRepo :: P.ConnectionPool -> Repo.Repo -> EIO [Job.Job]
-loadByRepo connectionPool (Repo.Repo repoID _) = do
+loadByRepo connectionPool (Repo.Repo repoID _ _) = do
     let action = (map Utils.getEntityValue) <$> P.selectList [Job.JobRepoID P.==. repoID] []
     Executor.execDB connectionPool action
 

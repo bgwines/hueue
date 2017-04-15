@@ -24,7 +24,7 @@ loadByGithubUserID connectionPool githubUserID = do
 
 -- dupes?
 insert :: P.ConnectionPool -> Repo.Repo -> EIO ()
-insert connectionPool repo@(Repo.Repo repoID githubUserID) = do
+insert connectionPool repo@(Repo.Repo repoID _ githubUserID) = do
     let sameUserID = Repo.RepoMergerGithubUserID P.==. githubUserID
     let sameRepoID = Repo.RepoRepoID P.==. repoID
     let filters = [P.FilterAnd [sameUserID, sameRepoID]]
@@ -34,4 +34,6 @@ insert connectionPool repo@(Repo.Repo repoID githubUserID) = do
         void $ Executor.execDB connectionPool (P.insert repo)
 
 convert :: WebhookRepo.Repo -> Int -> Repo.Repo
-convert webhookRepo = Repo.Repo (fromInteger . WebhookRepo.id $ webhookRepo)
+convert webhookRepo githubUserID = Repo.Repo repoID (WebhookRepo.name webhookRepo) githubUserID
+    where
+        repoID = fromInteger . WebhookRepo.id $ webhookRepo
