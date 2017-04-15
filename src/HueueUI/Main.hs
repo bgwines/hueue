@@ -30,8 +30,12 @@ serverAction port connectionPool = Scotty.scotty port $ do
     Scotty.get "/get_jobs" $ do
         eitherJobs <- runEitherT $ do
             repos <- currUserGithubUserID >>= RepoStore.loadByGithubUserID connectionPool
-            concat <$> mapM (JobStore.loadByRepo connectionPool) repos
-        Scotty.json . map toJSON . Utils.getRightOrElse [] $ eitherJobs
+            Utils.printIO repos
+            JobStore.loadByRepos connectionPool repos
+        jobs <- case eitherJobs of
+            (Left message) -> Utils.printIO message >> return []
+            (Right theJobs) -> return theJobs
+        Scotty.json . map toJSON $ jobs
 
     Scotty.get "/oauthRedirect" $ do
         accessTokenRequestCode :: String <- Scotty.param "code"

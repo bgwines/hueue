@@ -22,9 +22,9 @@ Job
     srcBranch T.Text
     dstBranch T.Text
     deriving Generic
+    deriving Show
 |]
 
 instance ToJSON Job where
     toJSON (Job repoID srcBranch dstBranch) =
         object ["repoID" .= repoID, "srcBranch" .= srcBranch, "dstBranch" .= dstBranch]
-

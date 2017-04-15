@@ -2,6 +2,7 @@
 
 module DataStore.JobStore
 ( loadByRepo
+, loadByRepos
 , insert
 ) where
 
@@ -17,6 +18,9 @@ loadByRepo :: P.ConnectionPool -> Repo.Repo -> EIO [Job.Job]
 loadByRepo connectionPool (Repo.Repo repoID _) = do
     let action = (map Utils.getEntityValue) <$> P.selectList [Job.JobRepoID P.==. repoID] []
     Executor.execDB connectionPool action
+
+loadByRepos :: P.ConnectionPool -> [Repo.Repo] -> EIO [Job.Job]
+loadByRepos connectionPool repos = concat <$> mapM (loadByRepo connectionPool) repos
 
 insert :: MonadIO m => P.ConnectionPool -> Job.Job -> m ()
 insert connectionPool job = Executor.execDB connectionPool (void $ P.insert job)
