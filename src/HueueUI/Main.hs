@@ -96,8 +96,6 @@ serve port connectionPool = scotty port $ do
             let params = [ ("client_id"    , BSChar8.pack githubClientID)
                          , ("client_secret", BSChar8.pack githubClientSecret)
                          , ("code"         , BSChar8.pack accessTokenRequestCode)
-                         , ("redirect_uri" , BSChar8.pack $ url ++ "/receiveAccessToken")
-                         , ("state"        , "142857")
                          ]
 
             let githubUrl = "https://github.com/login/oauth/access_token"
@@ -107,29 +105,20 @@ serve port connectionPool = scotty port $ do
 
             accessToken <- hoistEither . U.note "Fatal: couldn't extract access token" $
                 snd <$> List.find ((==) "access_token" . fst) decodedResultBody
-
-            let addHeaders r = r { HTTP.requestHeaders = [("User-Agent", "hueue"), ("Authorization", BSChar8.pack ("token " ++ accessToken))]}
-            userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
-            user <- (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
-
+            user <- getUserForToken accessToken
             let userID = fromIntegral $ User.id user
             TokenStore.insert connectionPool $ Token.OAuth2Token userID accessToken
-
         case result of
             (Left msg) -> text $ T.pack msg
             (Right _) -> text "success"
 
-    get "/receiveAccessToken" $ do
-        accessToken :: String <- param "access_token"
-        scope :: String <- param "scope"
-        tokenType :: String <- param "token_type"
-        liftIO . putStrLn $ "FINAL STAGE??1!!!?!!"
-        liftIO . print $ accessToken
-        liftIO . print $ scope
-        liftIO . print $ tokenType
-
-
     notFound $ text "there is no such route."
+    where
+        getUserForToken :: String -> EIO User.BigUser
+        getUserForToken accessToken = do
+            let addHeaders r = r { HTTP.requestHeaders = [("User-Agent", "hueue"), ("Authorization", BSChar8.pack ("token " ++ accessToken))]}
+            userJSON <- HTTP.responseBody <$> sendHTTPRequest "https://api.github.com/user" [] addHeaders methodGet
+            (hoistEither . A.eitherDecode $ userJSON) :: EIO User.BigUser
 
 type RequestModifier = HTTP.Request -> HTTP.Request
 
