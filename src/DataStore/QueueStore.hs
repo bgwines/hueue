@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module QueueStore.API
+module DataStore.QueueStore
 ( enqueue
 , dequeue
 , dequeueAll
@@ -19,7 +19,7 @@ import MonadImports
 
 import Aliases
 
-import qualified Job
+import qualified DataStore.Job as Job
 
 import qualified GithubWebhook.Types.Repo as Repo
 

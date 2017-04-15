@@ -7,15 +7,17 @@ module Utils
 , note
 , hush
 , replaceFirst
+, getEntityValue
 ) where
 
-import qualified Data.Char as Ch
-
-import Control.Exception
-
+import Aliases
 import MonadImports
+import qualified Control.Exception
+import qualified Data.Char as Ch
+import qualified Database.Persist.Sqlite as P
 
-type Error = String
+getEntityValue :: P.Entity v -> v
+getEntityValue (P.Entity k v) = v
 
 camelCaseToSnakeCase :: String -> String
 camelCaseToSnakeCase [] = []

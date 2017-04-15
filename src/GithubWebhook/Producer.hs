@@ -22,13 +22,11 @@ import qualified GithubWebhook.Types.Events.IssueCommentEvent as ICEvent
 
 import qualified Utils as U
 
-import qualified Job
-import qualified Repo
-import qualified RepoStore
-
 import Aliases
 
-import qualified QueueStore.API
+import qualified DataStore.Job as Job
+import qualified DataStore.RepoStore as RepoStore
+import qualified DataStore.QueueStore as QueueStore
 
 import Database.Persist
 import Database.Persist.TH
@@ -46,4 +44,4 @@ handleIssueComment connectionPool event = do
     let userID = fromIntegral . BigUser.id . Comment.user . ICEvent.comment $ event
     let repo = ICEvent.repository event
     RepoStore.insert connectionPool $ RepoStore.convert repo userID
-    QueueStore.API.enqueue connectionPool $ requestToJob request repo
+    QueueStore.enqueue connectionPool $ requestToJob request repo

@@ -2,50 +2,26 @@
 
 module Main (main) where
 
-import qualified Web.Scotty as Scotty
-import qualified Network.Wai as Wai
-
-import qualified Data.List as L
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.ByteString.Lazy.Internal as BSLI
-
-import qualified Job
-import qualified Repo
-
-import GHC.Generics
-
-import MonadImports
-
-import GithubWebhook.Types.Error (Error)
 import GithubWebhook.Constants (githubEvent)
-
+import MonadImports
 import qualified Data.Aeson as A
-
-import GithubWebhook.Types.Events.PushEvent
-import GithubWebhook.Types.Events.IssueCommentEvent
-
+import qualified Data.ByteString.Lazy.Internal as BSLI
+import qualified Data.List as L
+import qualified Data.Text.Lazy as TL
+import qualified Database.Persist.Sqlite as P
+import qualified DataStore.Job as Job
+import qualified DataStore.Repo as Repo
 import qualified GithubWebhook.Producer as Producer
-
-import Database.Persist
-import Database.Persist.TH
-import Database.Persist.Sqlite
-import Control.Monad.Logger (runStderrLoggingT)
-
+import qualified Network.Wai as Wai
+import qualified Executor
 import qualified Utils as U
-
-import Job
+import qualified Web.Scotty as Scotty
 
 main :: IO ()
-main = runStderrLoggingT $ do
-    connectionPool <- createSqlitePool "commonPool" 10
-    runSqlPool
-        (  runMigration Job.migrateAll
-        >> runMigration Repo.migrateAll ) connectionPool
-    liftIO $ serve 4567 connectionPool
+main = Executor.serve $ serverAction 4567
 
-serve :: Int -> ConnectionPool -> IO ()
-serve port connectionPool = Scotty.scotty port $ do
+serverAction :: Int -> P.ConnectionPool -> IO ()
+serverAction port connectionPool = Scotty.scotty port $ do
     Scotty.post "/payload" $
         handleGithubWebrequest connectionPool <$> Scotty.request <*> Scotty.headers <*> Scotty.body
             >>= eitherT U.putStrLnIO return
@@ -53,7 +29,7 @@ serve port connectionPool = Scotty.scotty port $ do
     Scotty.notFound $ Scotty.text "There is no such route."
 
 handleGithubWebrequest
-    :: ConnectionPool
+    :: P.ConnectionPool
     -> Wai.Request
     -> [(TL.Text, TL.Text)]
     -> BSLI.ByteString

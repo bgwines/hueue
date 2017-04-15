@@ -6,10 +6,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module RepoStore
+module DataStore.RepoStore
 ( loadByGithubUserID
-, RepoStore.insert
-, RepoStore.convert
+, DataStore.RepoStore.insert
+, DataStore.RepoStore.convert
 ) where
 
 import qualified Data.Default as Default
@@ -21,7 +21,7 @@ import Aliases
 
 import Data.Maybe
 
-import qualified Repo
+import qualified DataStore.Repo as Repo
 import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.Repo as WebhookRepo
 

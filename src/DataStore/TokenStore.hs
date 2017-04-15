@@ -6,9 +6,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module TokenStore
+module DataStore.TokenStore
 ( loadByUserID
-, TokenStore.insert
+, DataStore.TokenStore.insert
 ) where
 
 import qualified Data.Default as Default
@@ -20,7 +20,7 @@ import Aliases
 
 import Data.Maybe
 
-import qualified Token
+import qualified DataStore.Token as Token
 
 import qualified Utils as U
 

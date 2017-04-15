@@ -8,7 +8,10 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Repo where
+module DataStore.Job where
+
+import Data.Aeson
+import GHC.Generics
 
 import Database.Persist
 import Database.Persist.TH
@@ -17,8 +20,14 @@ import Database.Persist.Sqlite
 import qualified Data.Text as T
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Repo
+Job
     repoID Int
-    mergerGithubUserID Int
-    deriving Show
+    srcBranch T.Text
+    dstBranch T.Text
+    deriving Generic
 |]
+
+instance ToJSON Job where
+    toJSON (Job repoID srcBranch dstBranch) =
+        object ["repoID" .= repoID, "srcBranch" .= srcBranch, "dstBranch" .= dstBranch]
+

@@ -8,16 +8,17 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Token where
+module DataStore.Repo where
 
 import Database.Persist
 import Database.Persist.TH
 import Database.Persist.Sqlite
 
+import qualified Data.Text as T
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-OAuth2Token
-    userID Int
-    token String
-    UniqueUserID userID
+Repo
+    repoID Int
+    mergerGithubUserID Int
     deriving Show
 |]
