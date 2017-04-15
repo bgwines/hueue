@@ -1,12 +1,9 @@
 {-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric              #-}
 
 module DataStore.Job where
 

@@ -1,10 +1,4 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE Rank2Types #-}
 
 module DataStore.RepoStore
 ( loadByGithubUserID
@@ -12,44 +6,32 @@ module DataStore.RepoStore
 , DataStore.RepoStore.convert
 ) where
 
-import qualified Data.Default as Default
-import qualified Data.Serialize as Serialize
-
-import MonadImports
-
 import Aliases
-
-import Data.Maybe
-
+import MonadImports
+import qualified Database.Persist.Sqlite as P
+import qualified DataStore.Job as Job
 import qualified DataStore.Repo as Repo
-import qualified GithubWebhook.Types.BigUser as BigUser
 import qualified GithubWebhook.Types.Repo as WebhookRepo
+import qualified Executor
+import qualified Utils
 
-import qualified Utils as U
-
-import qualified Data.Text as T
-
-import Database.Persist
-import Database.Persist.TH
-import Database.Persist.Sqlite
-import Control.Monad.Logger (runStderrLoggingT)
-
-loadByGithubUserID :: ConnectionPool -> Int -> EIO [Repo.Repo]
-loadByGithubUserID connectionPool githubUserID = liftIO . runStderrLoggingT $ do
-    let action = selectList [Repo.RepoMergerGithubUserID ==. githubUserID] []
-    map (\(Entity key repo) -> repo) <$> runSqlPool action connectionPool
+loadByGithubUserID :: P.ConnectionPool -> Int -> EIO [Repo.Repo]
+loadByGithubUserID connectionPool githubUserID = do
+    let action = do
+        l <- P.selectList [Repo.RepoMergerGithubUserID P.==. githubUserID] []
+        return $ map Utils.getEntityValue l
+    Executor.execDB connectionPool action
 
 -- dupes?
-insert :: ConnectionPool -> Repo.Repo -> EIO ()
-insert connectionPool repo@(Repo.Repo repoID githubUserID) = liftIO . runStderrLoggingT $ do
-    let filters = [FilterAnd [Repo.RepoMergerGithubUserID ==. githubUserID, Repo.RepoRepoID ==. repoID]]
-    let action = selectList filters []
-    numRepos <- length <$> runSqlPool action connectionPool
-    U.printIO "numRepos"
-    U.printIO numRepos
+insert :: P.ConnectionPool -> Repo.Repo -> EIO ()
+insert connectionPool repo@(Repo.Repo repoID githubUserID) = do
+    let sameUserID = Repo.RepoMergerGithubUserID P.==. githubUserID
+    let sameRepoID = Repo.RepoRepoID P.==. repoID
+    let filters = [P.FilterAnd [sameUserID, sameRepoID]]
+    let action = length <$> P.selectList filters []
+    numRepos <- Executor.execDB connectionPool action
     unless (numRepos > 0) $ do
-        U.printIO "inserting"
-        void $ runSqlPool (Database.Persist.Sqlite.insert repo) connectionPool
+        void $ Executor.execDB connectionPool (P.insert repo)
 
 convert :: WebhookRepo.Repo -> Int -> Repo.Repo
 convert webhookRepo = Repo.Repo (fromInteger . WebhookRepo.id $ webhookRepo)

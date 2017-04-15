@@ -1,41 +1,21 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE Rank2Types #-}
 
 module DataStore.TokenStore
 ( loadByUserID
-, DataStore.TokenStore.insert
+, insert
 ) where
 
-import qualified Data.Default as Default
-import qualified Data.Serialize as Serialize
-
-import MonadImports
-
 import Aliases
-
-import Data.Maybe
-
+import MonadImports
+import qualified Database.Persist.Sqlite as P
 import qualified DataStore.Token as Token
+import qualified Utils as Utils
+import qualified Executor
 
-import qualified Utils as U
+loadByUserID :: P.ConnectionPool -> Int -> EIO (Maybe Token.OAuth2Token)
+loadByUserID connectionPool githubUserID = do
+    let action = fmap Utils.getEntityValue <$> P.getBy (Token.UniqueUserID githubUserID)
+    Executor.execDB connectionPool action
 
-import qualified Data.Text as T
-
-import Database.Persist
-import Database.Persist.TH
-import Database.Persist.Sqlite
-import Control.Monad.Logger (runStderrLoggingT)
-
-loadByUserID :: ConnectionPool -> Int -> EIO (Maybe Token.OAuth2Token)
-loadByUserID connectionPool githubUserID = liftIO . runStderrLoggingT $ do
-    let action = getBy $ Token.UniqueUserID githubUserID
-    runSqlPool (fmap (\(Entity k t) -> t) <$> action) connectionPool
-
-insert :: ConnectionPool -> Token.OAuth2Token -> EIO ()
-insert connectionPool token = liftIO . runStderrLoggingT . void $
-    runSqlPool (Database.Persist.Sqlite.insert token) connectionPool
+insert :: P.ConnectionPool -> Token.OAuth2Token -> EIO ()
+insert connectionPool token = void $ Executor.execDB connectionPool (P.insert token)

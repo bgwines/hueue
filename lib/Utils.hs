@@ -8,6 +8,7 @@ module Utils
 , hush
 , replaceFirst
 , getEntityValue
+, getRightOrElse
 ) where
 
 import Aliases
@@ -56,3 +57,7 @@ replaceFirst _ _ [] = []
 replaceFirst a b (x:xs)
     | a == x = b:xs
     | otherwise = x : replaceFirst a b xs
+
+getRightOrElse :: b -> Either a b -> b
+getRightOrElse b (Left _) = b
+getRightOrElse _ (Right b) = b

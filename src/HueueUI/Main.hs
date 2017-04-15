@@ -18,6 +18,7 @@ import qualified GithubOAuth
 import qualified GithubWebhook.Types.BigUser as User
 import qualified Executor
 import qualified Web.Scotty as Scotty
+import qualified Utils
 
 main :: IO ()
 main = Executor.serve $ serverAction 3000
@@ -30,10 +31,7 @@ serverAction port connectionPool = Scotty.scotty port $ do
         eitherJobs <- runEitherT $ do
             repos <- currUserGithubUserID >>= RepoStore.loadByGithubUserID connectionPool
             concat <$> mapM (JobStore.loadByRepo connectionPool) repos
-        jobs <- case eitherJobs of
-            (Left msg) -> return []
-            (Right js) -> return js
-        Scotty.json . map toJSON $ jobs
+        Scotty.json . map toJSON . Utils.getRightOrElse [] $ eitherJobs
 
     Scotty.get "/oauthRedirect" $ do
         accessTokenRequestCode :: String <- Scotty.param "code"
