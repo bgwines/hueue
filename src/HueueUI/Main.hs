@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -6,7 +7,7 @@
 module Main (main) where
 
 import Aliases
-import Data.Aeson (toJSON)
+import Data.Aeson (toJSON, ToJSON, object, (.=), Value)
 import MonadImports
 import qualified Data.Text.Lazy as TL
 import qualified Database.Persist.Sqlite as P
@@ -27,15 +28,25 @@ serverAction :: Int -> P.ConnectionPool -> IO ()
 serverAction port connectionPool = Scotty.scotty port $ do
     Scotty.get "/" $ liftIO (TL.pack <$> readFile "src/HueueUI/index.html") >>= Scotty.html
 
-    Scotty.get "/get_jobs" $ do
+    Scotty.get "/getJobs" $ do
         eitherJobs <- runEitherT $ do
             repos <- currUserGithubUserID >>= RepoStore.loadByGithubUserID connectionPool
             Utils.printIO repos
-            JobStore.loadByRepos connectionPool repos
+            let repoToJobs r = map (displayJob r) <$> JobStore.loadByRepo connectionPool r
+            concat <$> mapM repoToJobs repos
         jobs <- case eitherJobs of
             (Left message) -> Utils.printIO message >> return []
             (Right theJobs) -> return theJobs
-        Scotty.json . map toJSON $ jobs
+        Scotty.json jobs
+
+    Scotty.post "/killJob" $ do
+        Scotty.text "resuuuult"
+
+    Scotty.post "/suspendJob" $ do
+        Scotty.text "resuuuult"
+
+    Scotty.post "/resumeJob" $ do
+        Scotty.text "resuuuult"
 
     Scotty.get "/oauthRedirect" $ do
         accessTokenRequestCode :: String <- Scotty.param "code"
@@ -51,3 +62,7 @@ serverAction port connectionPool = Scotty.scotty port $ do
 
 currUserGithubUserID :: (MonadIO m) => m Int
 currUserGithubUserID = return 2442246
+
+displayJob :: Repo.Repo -> Job.Job -> Value
+displayJob (Repo.Repo _ name _) (Job.Job repoID srcBranch dstBranch) =
+    object ["repoName" .= name, "srcBranch" .= srcBranch, "dstBranch" .= dstBranch]

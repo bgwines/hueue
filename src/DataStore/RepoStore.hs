@@ -2,6 +2,7 @@
 
 module DataStore.RepoStore
 ( loadByGithubUserID
+, loadByRepoID
 , DataStore.RepoStore.insert
 , DataStore.RepoStore.convert
 ) where
@@ -17,9 +18,13 @@ import qualified Utils
 
 loadByGithubUserID :: P.ConnectionPool -> Int -> EIO [Repo.Repo]
 loadByGithubUserID connectionPool githubUserID = do
-    let action = do
-        l <- P.selectList [Repo.RepoMergerGithubUserID P.==. githubUserID] []
-        return $ map Utils.getEntityValue l
+    let filters = [Repo.RepoMergerGithubUserID P.==. githubUserID]
+    let action = map Utils.getEntityValue <$> P.selectList filters []
+    Executor.execDB connectionPool action
+
+loadByRepoID :: P.ConnectionPool -> Int -> EIO [Repo.Repo]
+loadByRepoID connectionPool repoID = do
+    let action = map Utils.getEntityValue <$> P.selectList [Repo.RepoRepoID P.==. repoID] []
     Executor.execDB connectionPool action
 
 -- dupes?

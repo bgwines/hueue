@@ -11,6 +11,9 @@
           border: 1px solid #ddd;
           text-align: left;
       }
+      table, td {
+          text-align: left;
+      }
       table {
           border-collapse: collapse;
           width: 50%;
@@ -18,7 +21,10 @@
       th, td {
           padding: 15px;
       }
-      th {background-color: #51ade2;}
+      th {
+          background-color: #51ade2;
+          text-align: center;
+      }
       tr:hover{background-color:#f5f5f5}
     </style>
   </head>
@@ -42,7 +48,7 @@
 </html>
 
 <script type="text/javascript">
-    $.getJSON('get_jobs', function (jobs) {
+    $.getJSON('getJobs', function (jobs) {
         var content = "<table>"
         content += '<tr>'
           + '<th><bold>Repo</bold></th>'
@@ -50,28 +56,42 @@
           + '<th><bold>Merging Branch</bold></th>'
           + '<th><bold>Actions</bold></th>'
         '</tr>';
+        jobs = [{repoName:"repo", srcBranch:"src", dstBranch:"dst"}]
         for (i = 0; i < jobs.length; i++) {
+            var killButton = '<button type="button" onclick="foo()">Kill</button>';
+            var suspendButton = '<button type="button" onclick="foo()">Suspend</button>';
+            var resumeButton = '<button type="button" onclick="foo()">Resume</button>';
             content += '<tr>'
-              + '<td>' + jobs[i].repoID + '</td>'
-              + '<td>' + jobs[i].srcBranch + '</td>'
-              + '<td>' + jobs[i].dstBranch + '</td>'
-              + '<td>' + '<a href="/modifyJob?action=kill&repoID=jobs[i].repoID">kill</a> <a href="/modifyJob?action=suspend&repoID=jobs[i].repoID">suspend</a> <a href="/modifyJob?action=resume&repoID=jobs[i].repoID">resume</a></td>'
-              + '</tr>';
+                + '<td>' + jobs[i].repoName + '</td>'
+                + '<td>' + jobs[i].srcBranch + '</td>'
+                + '<td>' + jobs[i].dstBranch + '</td>'
+                + '<td>' + killButton + suspendButton + resumeButton + '</td>'
+                + '</tr>';
         }
         content += "</table>"
         $('#jobs').append(content);
     });
 
+    foo = function() {
+        $.ajax({
+            url:"/modifyJob",
+            type: "POST",
+            success: function(result){
+                alert(result);
+            }
+       });
+    }
+
     getOauthURL = function() {
-      var url = "http://34.208.168.142:3000";
-      var githubClientID = "416fdf5ed5fb66f16bd3";
-      var oauthURL = "https://github.com/login/oauth/authorize"
-                      + "?client_id="    + githubClientID
-                      + "&redirect_uri=" + url + "/oauthRedirect"
-                      + "&scope="        + "repo"
-                      + "&state="        + "142857"
-                      + "&allow_signup=" + "true";
-      return oauthURL;
+        var url = "http://34.208.168.142:3000";
+        var githubClientID = "416fdf5ed5fb66f16bd3";
+        var oauthURL = "https://github.com/login/oauth/authorize"
+                     + "?client_id="    + githubClientID
+                     + "&redirect_uri=" + url + "/oauthRedirect"
+                     + "&scope="        + "repo"
+                     + "&state="        + "142857"
+                     + "&allow_signup=" + "true";
+        return oauthURL;
     }
 
     $('#oauthLogin').append("<a href=" + getOauthURL() + ">Give Hueue access</a>");

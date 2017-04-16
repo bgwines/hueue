@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
