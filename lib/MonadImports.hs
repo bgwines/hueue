@@ -7,6 +7,7 @@ import Data.Monoid as X
 
 import Control.Monad as X
 import Control.Applicative as X
+import Control.Conditional as X (whenM, unlessM)
 import Control.Monad.IO.Class as X
 import Control.Monad.Trans.Class as X
 import Control.Monad.Trans.Maybe as X

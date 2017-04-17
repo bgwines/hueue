@@ -54,9 +54,10 @@
           + '<th><bold>Repo</bold></th>'
           + '<th><bold>Base Branch</bold></th>'
           + '<th><bold>Merging Branch</bold></th>'
+          + '<th><bold>State</bold></th>'
           + '<th><bold>Actions</bold></th>'
         '</tr>';
-        jobs = [{repoName:"repo", srcBranch:"src", dstBranch:"dst"}]
+        // jobs = [{repoName:"repo", srcBranch:"src", dstBranch:"dst", state:"state"}];
         for (i = 0; i < jobs.length; i++) {
             var killButton = '<button type="button" onclick="foo()">Kill</button>';
             var suspendButton = '<button type="button" onclick="foo()">Suspend</button>';
@@ -65,6 +66,7 @@
                 + '<td>' + jobs[i].repoName + '</td>'
                 + '<td>' + jobs[i].srcBranch + '</td>'
                 + '<td>' + jobs[i].dstBranch + '</td>'
+                + '<td>' + jobs[i].state + '</td>'
                 + '<td>' + killButton + suspendButton + resumeButton + '</td>'
                 + '</tr>';
         }

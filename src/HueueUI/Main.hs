@@ -64,5 +64,10 @@ currUserGithubUserID :: (MonadIO m) => m Int
 currUserGithubUserID = return 2442246
 
 displayJob :: Repo.Repo -> Job.Job -> Value
-displayJob (Repo.Repo _ name _) (Job.Job repoID srcBranch dstBranch) =
-    object ["repoName" .= name, "srcBranch" .= srcBranch, "dstBranch" .= dstBranch]
+displayJob (Repo.Repo _ name _) (Job.Job repoID srcBranch dstBranch state) =
+    object
+        [ "repoName" .= name
+        , "srcBranch" .= srcBranch
+        , "dstBranch" .= dstBranch
+        , "state" .= show state
+        ]
