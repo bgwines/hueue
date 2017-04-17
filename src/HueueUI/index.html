@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>
       Hueue Console
     </title>
@@ -48,37 +48,41 @@
 </html>
 
 <script type="text/javascript">
-    $.getJSON('getJobs', function (jobs) {
+    $.getJSON("getJobs", function (jobs) {
         var content = "<table>"
-        content += '<tr>'
-          + '<th><bold>Repo</bold></th>'
-          + '<th><bold>Base Branch</bold></th>'
-          + '<th><bold>Merging Branch</bold></th>'
-          + '<th><bold>State</bold></th>'
-          + '<th><bold>Actions</bold></th>'
-        '</tr>';
-        // jobs = [{repoName:"repo", srcBranch:"src", dstBranch:"dst", state:"state"}];
+        content += "<tr>"
+          + "<th><bold>Repo</bold></th>"
+          + "<th><bold>Base Branch</bold></th>"
+          + "<th><bold>Merging Branch</bold></th>"
+          + "<th><bold>State</bold></th>"
+          + "<th><bold>Actions</bold></th>"
+        "</tr>";
+        // jobs = [{repoName:"repo", srcBranch:"src", dstBranch:"dst", state:"state", key:142857}];
         for (i = 0; i < jobs.length; i++) {
-            var killButton = '<button type="button" onclick="foo()">Kill</button>';
-            var suspendButton = '<button type="button" onclick="foo()">Suspend</button>';
-            var resumeButton = '<button type="button" onclick="foo()">Resume</button>';
-            content += '<tr>'
-                + '<td>' + jobs[i].repoName + '</td>'
-                + '<td>' + jobs[i].srcBranch + '</td>'
-                + '<td>' + jobs[i].dstBranch + '</td>'
-                + '<td>' + jobs[i].state + '</td>'
-                + '<td>' + killButton + suspendButton + resumeButton + '</td>'
-                + '</tr>';
+            var getButton = function(url, name) {
+                return "<button type=\"button\" onclick=\"modifyJob('" + url + "')\">" + name + "</button>";
+            }
+            var key = jobs[i].key;
+            var killButton = getButton("/killJob?key=" + key, "Kill");
+            var suspendButton = getButton("/suspendJob?key=" + key, "Suspend");
+            var resumeButton = getButton("/resumeJob?key=" + key, "Resume");
+            content += "<tr>"
+                + "<td>" + jobs[i].repoName + "</td>"
+                + "<td>" + jobs[i].srcBranch + "</td>"
+                + "<td>" + jobs[i].dstBranch + "</td>"
+                + "<td>" + jobs[i].state + "</td>"
+                + "<td>" + killButton + suspendButton + resumeButton + "</td>"
+                + "</tr>";
         }
         content += "</table>"
-        $('#jobs').append(content);
+        $("#jobs").append(content);
     });
 
-    foo = function() {
+    modifyJob = function(url) {
         $.ajax({
-            url:"/modifyJob",
-            type: "POST",
-            success: function(result){
+            url : url,
+            type : "POST",
+            success : function(result){
                 alert(result);
             }
        });
@@ -96,5 +100,5 @@
         return oauthURL;
     }
 
-    $('#oauthLogin').append("<a href=" + getOauthURL() + ">Give Hueue access</a>");
+    $("#oauthLogin").append("<a href=" + getOauthURL() + ">Give Hueue access</a>");
 </script>
